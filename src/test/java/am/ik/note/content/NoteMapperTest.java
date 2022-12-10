@@ -34,8 +34,6 @@ class NoteMapperTest {
 	void init() {
 		this.noteMapper.deleteByEntryId(100L);
 		this.noteMapper.deleteByEntryId(200L);
-		this.noteMapper.deleteByEntryId(300L);
-		this.noteMapper.deleteByEntryId(400L);
 	}
 
 	@Test

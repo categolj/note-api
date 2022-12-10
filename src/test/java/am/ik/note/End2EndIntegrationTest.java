@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -363,6 +364,13 @@ public class End2EndIntegrationTest {
 				.returnResult();
 		final JsonNode tokenNode = this.objectMapper.readValue(tokenResult.getResponseBody(), JsonNode.class);
 		this.accessToken = tokenNode.get("access_token").asText();
+	}
+
+	@AfterAll
+	void cleanUp() {
+		this.noteMapper.deleteByEntryId(300L);
+		this.noteMapper.deleteByEntryId(400L);
+		this.readerMapper.deleteByEmail("test@example.com");
 	}
 
 	@TestConfiguration

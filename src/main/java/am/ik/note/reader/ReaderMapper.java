@@ -65,4 +65,11 @@ public class ReaderMapper {
 				UPDATE reader SET reader_state = ? WHERE reader_id = ?
 				""", readerState.name(), readerId.toString());
 	}
+
+	@Transactional
+	public int deleteByEmail(String email) {
+		return this.jdbcTemplate.update("""
+				DELETE FROM reader WHERE email = ?
+				""", email);
+	}
 }
