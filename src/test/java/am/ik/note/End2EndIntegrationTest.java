@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import am.ik.note.content.NoteId;
 import am.ik.note.content.NoteMapper;
+import am.ik.note.entry.Entries;
 import am.ik.note.entry.Entry;
 import am.ik.note.entry.EntryClient;
 import am.ik.note.entry.FrontMatter;
@@ -151,10 +152,10 @@ public class End2EndIntegrationTest {
 	@Order(5)
 	void checkAvailableNoteList() {
 		given(this.entryClient.getEntries())
-				.willReturn(List.of(new Entry(100L, new FrontMatter("entry 100"), null, null, null),
+				.willReturn(new Entries(List.of(new Entry(100L, new FrontMatter("entry 100"), null, null, null),
 						new Entry(200L, new FrontMatter("entry 200"), null, null, null),
 						new Entry(300L, new FrontMatter("entry 300"), null, null, null),
-						new Entry(400L, new FrontMatter("entry 400"), null, null, null)));
+						new Entry(400L, new FrontMatter("entry 400"), null, null, null))));
 		this.webTestClient.get()
 				.uri("http://localhost:{port}/notes", this.port)
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)

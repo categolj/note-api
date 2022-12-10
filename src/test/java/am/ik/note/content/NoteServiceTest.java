@@ -7,6 +7,7 @@ import java.util.Optional;
 import am.ik.note.MockConfig;
 import am.ik.note.content.NoteService.SubscriptionStatus;
 import am.ik.note.entry.Author;
+import am.ik.note.entry.Entries;
 import am.ik.note.entry.Entry;
 import am.ik.note.entry.EntryClient;
 import am.ik.note.entry.FrontMatter;
@@ -54,8 +55,8 @@ class NoteServiceTest {
 						.withEntryId(102L)
 						.withNoteUrl("https://example.com/note2")
 						.withSubscribed(false)));
-		given(this.entryClient.getEntries()).willReturn(List.of(new Entry(101L, new FrontMatter("title1"), null, null, null),
-				new Entry(102L, new FrontMatter("title2"), null, null, null)));
+		given(this.entryClient.getEntries()).willReturn(new Entries(List.of(new Entry(101L, new FrontMatter("title1"), null, null, null),
+				new Entry(102L, new FrontMatter("title2"), null, null, null))));
 		final List<NoteSummary> summaries = this.noteService.findAll(readerId);
 
 		assertThat(summaries.stream().map(NoteSummary::title)).containsExactly("title1", "title2");

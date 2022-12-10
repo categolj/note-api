@@ -1,0 +1,10 @@
+version: "2"
+services:
+  postgresql:
+    image: bitnami/postgresql:14
+    ports:
+    - 15432:5432
+    environment:
+      POSTGRES_DB: note
+      POSTGRES_USER: note
+      POSTGRES_PASSWORD: note

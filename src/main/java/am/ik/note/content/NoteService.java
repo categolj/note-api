@@ -33,7 +33,7 @@ public class NoteService {
 		if (summaries.isEmpty()) {
 			return List.of();
 		}
-		final Map<Long, String> entryMap = this.entryClient.getEntries().stream()
+		final Map<Long, String> entryMap = this.entryClient.getEntries().content().stream()
 				.collect(toUnmodifiableMap(Entry::entryId, e -> e.frontMatter().title()));
 		return summaries
 				.stream()
