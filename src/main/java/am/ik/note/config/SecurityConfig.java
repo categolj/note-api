@@ -9,6 +9,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -51,6 +52,7 @@ public class SecurityConfig {
 		return http
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(OPTIONS).permitAll()
+						.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
 						.requestMatchers("/oauth/token").permitAll()
 						.requestMatchers("/password_reset", "/password_reset/**").permitAll()
 						.requestMatchers(POST, "/readers/*/activations/*", "/readers").permitAll()
