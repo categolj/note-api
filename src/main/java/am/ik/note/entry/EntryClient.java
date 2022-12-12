@@ -7,7 +7,6 @@ public interface EntryClient {
 	@GetExchange(url = "/entries")
 	Entries getEntries();
 
-
 	@GetExchange(url = "/entries/{entryId}")
 	Entry getEntry(@PathVariable("entryId") Long entryId);
 }

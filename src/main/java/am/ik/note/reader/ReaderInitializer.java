@@ -26,9 +26,11 @@ public class ReaderInitializer {
 	public void initialize(ReaderId readerId) {
 		try {
 			// entryId = 100
-			this.subscribeIfNotSubscribed(NoteId.valueOf("9d341d4d-f7e8-400d-82f1-95e05bd9fc0b"), readerId);
+			this.subscribeIfNotSubscribed(
+					NoteId.valueOf("9d341d4d-f7e8-400d-82f1-95e05bd9fc0b"), readerId);
 			// entryId = 200
-			this.subscribeIfNotSubscribed(NoteId.valueOf("e48ec0f9-18d8-442b-8e2a-d1db38593ceb"), readerId);
+			this.subscribeIfNotSubscribed(
+					NoteId.valueOf("e48ec0f9-18d8-442b-8e2a-d1db38593ceb"), readerId);
 		}
 		catch (RuntimeException e) {
 			// Ignore subscription failure
@@ -37,7 +39,8 @@ public class ReaderInitializer {
 	}
 
 	void subscribeIfNotSubscribed(NoteId noteId, ReaderId readerId) {
-		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId);
+		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId,
+				readerId);
 		if (count == 0) {
 			this.noteService.subscribe(noteId, readerId);
 		}

@@ -15,11 +15,12 @@ public class SendGridActiveLinkSender implements ActivationLinkSender {
 	@Override
 	public void sendActivationLink(String email, ActivationLink activationLink) {
 		final String subject = "【はじめるSpring Boot 3】アカウントアクティベーションリンク通知";
-		final String link = String.format("https://ik.am/note/readers/%s/activations/%s", activationLink.readerId(), activationLink.activationId());
+		final String link = String.format("https://ik.am/note/readers/%s/activations/%s",
+				activationLink.readerId(), activationLink.activationId());
 		final String content = "こんにちは@makingです。\n\n" + //
-							   "購読ありがとうございます。次のURLをクリックしてアカウントのアクティベートを行って下さい。\n\n" +  //
-							   link + "\n\n" + //
-							   "リンクは" + activationLink.expiry() + "まで有効です。";
+				"購読ありがとうございます。次のURLをクリックしてアカウントのアクティベートを行って下さい。\n\n" + //
+				link + "\n\n" + //
+				"リンクは" + activationLink.expiry() + "まで有効です。";
 		this.sendGridSender.sendMail(email, subject, content);
 	}
 }

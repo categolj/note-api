@@ -18,10 +18,12 @@ public class ActivationLinkMapper {
 	private final JdbcTemplate jdbcTemplate;
 
 	private final RowMapper<ActivationLink> activationLinkRowMapper = (rs, i) -> {
-		final ActivationLinkId id = ActivationLinkId.valueOf(rs.getString("activation_id"));
+		final ActivationLinkId id = ActivationLinkId
+				.valueOf(rs.getString("activation_id"));
 		final ReaderId readerId = ReaderId.valueOf(rs.getString("reader_id"));
 		final Timestamp createdAt = rs.getTimestamp("created_at");
-		return new ActivationLink(id, readerId, createdAt.toInstant().atOffset(ZoneOffset.UTC));
+		return new ActivationLink(id, readerId,
+				createdAt.toInstant().atOffset(ZoneOffset.UTC));
 	};
 
 	public ActivationLinkMapper(JdbcTemplate jdbcTemplate) {
@@ -29,16 +31,22 @@ public class ActivationLinkMapper {
 	}
 
 	public Optional<ActivationLink> findById(ActivationLinkId activationLinkId) {
-		return wrapQuery(() -> this.jdbcTemplate.queryForObject("""
-				SELECT activation_id, reader_id, created_at FROM activation_link WHERE activation_id = ?
-				""", activationLinkRowMapper, activationLinkId.toString()));
+		return wrapQuery(() -> this.jdbcTemplate.queryForObject(
+				"""
+						SELECT activation_id, reader_id, created_at FROM activation_link WHERE activation_id = ?
+						""",
+				activationLinkRowMapper, activationLinkId.toString()));
 	}
 
 	@Transactional
 	public int insert(ActivationLink activationLink) {
-		return this.jdbcTemplate.update("""
-				INSERT INTO activation_link(activation_id, reader_id, created_at) VALUES(?, ?, ?)
-				""", activationLink.activationId().toString(), activationLink.readerId().toString(), Timestamp.from(activationLink.createdAt().toInstant()));
+		return this.jdbcTemplate.update(
+				"""
+						INSERT INTO activation_link(activation_id, reader_id, created_at) VALUES(?, ?, ?)
+						""",
+				activationLink.activationId().toString(),
+				activationLink.readerId().toString(),
+				Timestamp.from(activationLink.createdAt().toInstant()));
 	}
 
 	@Transactional

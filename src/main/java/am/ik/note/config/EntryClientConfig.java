@@ -17,7 +17,8 @@ public class EntryClientConfig {
 	public EntryClient entryClient(WebClient.Builder builder, EntryProps props) {
 		final WebClientAdapter adapter = WebClientAdapter
 				.forClient(builder.baseUrl(props.apiUrl())
-						.defaultHeaders(httpHeaders -> httpHeaders.setBasicAuth(props.clientId(), props.clientSecret()))
+						.defaultHeaders(httpHeaders -> httpHeaders
+								.setBasicAuth(props.clientId(), props.clientSecret()))
 						.build());
 		final HttpServiceProxyFactory factory = HttpServiceProxyFactory.builder(adapter)
 				.build();

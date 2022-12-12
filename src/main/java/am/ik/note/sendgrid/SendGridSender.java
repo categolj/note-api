@@ -29,7 +29,8 @@ public class SendGridSender {
 
 	public void sendMail(String to, String subject, String content) {
 		try {
-			Mail mail = new Mail(new Email("noreply@ik.am"), subject, new Email(to), new Content("text/plain", content));
+			Mail mail = new Mail(new Email("noreply@ik.am"), subject, new Email(to),
+					new Content("text/plain", content));
 			mail.setReplyTo(new Email("makingx+hajiboot3@gmail.com"));
 
 			Request request = new Request();
@@ -41,7 +42,8 @@ public class SendGridSender {
 				log.warn("statusCode = {}", response.getStatusCode());
 				log.warn("headers = {}", response.getHeaders());
 				log.warn("body = {}", response.getBody());
-				throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Sending a mail failed ... Please register again later.");
+				throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+						"Sending a mail failed ... Please register again later.");
 			}
 		}
 		catch (IOException e) {

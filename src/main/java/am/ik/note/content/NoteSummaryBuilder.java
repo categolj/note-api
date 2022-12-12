@@ -41,6 +41,7 @@ public class NoteSummaryBuilder {
 	}
 
 	public NoteSummary build() {
-		return new NoteSummary(this.noteId, this.entryId, this.title, this.noteUrl, this.subscribed);
+		return new NoteSummary(this.noteId, this.entryId, this.title, this.noteUrl,
+				this.subscribed);
 	}
 }

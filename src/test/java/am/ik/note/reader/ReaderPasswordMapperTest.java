@@ -25,16 +25,20 @@ class ReaderPasswordMapperTest {
 
 	@BeforeEach
 	void setup() {
-		final ReaderId readerId = ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
+		final ReaderId readerId = ReaderId
+				.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
 		this.readerMapper.insert(readerId, "demo@example.com");
 	}
 
 	@Test
 	void insertAndFind() {
-		final ReaderId readerId = ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
-		final int count = this.readerPasswordMapper.insert(new ReaderPassword(readerId, "{noop}password"));
+		final ReaderId readerId = ReaderId
+				.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
+		final int count = this.readerPasswordMapper
+				.insert(new ReaderPassword(readerId, "{noop}password"));
 		assertThat(count).isEqualTo(1);
-		final Reader reader = this.readerMapper.findByEmail("demo@example.com").orElseThrow();
+		final Reader reader = this.readerMapper.findByEmail("demo@example.com")
+				.orElseThrow();
 		assertThat(reader.readerId()).isEqualTo(readerId);
 		assertThat(reader.email()).isEqualTo("demo@example.com");
 		assertThat(reader.isDisabled()).isTrue();
@@ -43,12 +47,15 @@ class ReaderPasswordMapperTest {
 
 	@Test
 	void insertAndDeleteAndFind() {
-		final ReaderId readerId = ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
-		final int count = this.readerPasswordMapper.insert(new ReaderPassword(readerId, "{noop}password"));
+		final ReaderId readerId = ReaderId
+				.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
+		final int count = this.readerPasswordMapper
+				.insert(new ReaderPassword(readerId, "{noop}password"));
 		assertThat(count).isEqualTo(1);
 		final int deleted = this.readerPasswordMapper.deleteByReaderId(readerId);
 		assertThat(deleted).isEqualTo(1);
-		final Reader reader = this.readerMapper.findByEmail("demo@example.com").orElseThrow();
+		final Reader reader = this.readerMapper.findByEmail("demo@example.com")
+				.orElseThrow();
 		assertThat(reader.readerId()).isEqualTo(readerId);
 		assertThat(reader.email()).isEqualTo("demo@example.com");
 		assertThat(reader.isDisabled()).isTrue();

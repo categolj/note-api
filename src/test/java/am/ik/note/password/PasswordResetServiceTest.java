@@ -47,7 +47,9 @@ class PasswordResetServiceTest {
 	void sendLink(CapturedOutput output) {
 		final PasswordResetId resetId = PasswordResetId.random();
 		given(this.passwordResetMapper.insert(any(), any())).willReturn(1);
-		final PasswordReset passwordReset = new PasswordReset(resetId, ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime.now());
+		final PasswordReset passwordReset = new PasswordReset(resetId,
+				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
+				OffsetDateTime.now());
 		final int count = this.passwordResetService.sendLink(passwordReset);
 		assertThat(count).isEqualTo(1);
 		assertThat(output.toString()).contains("Send Link: " + passwordReset);
@@ -57,13 +59,18 @@ class PasswordResetServiceTest {
 	void reset() {
 		final PasswordResetId resetId = PasswordResetId.random();
 		given(this.readerPasswordMapper.insert(any())).willReturn(1);
-		final ArgumentCaptor<ReaderPassword> captor = ArgumentCaptor.forClass(ReaderPassword.class);
-		final PasswordReset passwordReset = new PasswordReset(resetId, ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime.parse("2022-12-06T06:38:31.343307Z").minus(3L, ChronoUnit.DAYS).plus(1L, ChronoUnit.MINUTES));
+		final ArgumentCaptor<ReaderPassword> captor = ArgumentCaptor
+				.forClass(ReaderPassword.class);
+		final PasswordReset passwordReset = new PasswordReset(resetId,
+				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
+				OffsetDateTime.parse("2022-12-06T06:38:31.343307Z")
+						.minus(3L, ChronoUnit.DAYS).plus(1L, ChronoUnit.MINUTES));
 		final int count = this.passwordResetService.reset(passwordReset, "newPassword");
 		assertThat(count).isEqualTo(1);
 		verify(this.readerPasswordMapper).insert(captor.capture());
 		final ReaderPassword readerPassword = captor.getValue();
-		assertThat(readerPassword.readerId()).isEqualTo(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"));
+		assertThat(readerPassword.readerId())
+				.isEqualTo(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"));
 		assertThat(readerPassword.hashedPassword()).isEqualTo("{noop}newPassword");
 	}
 
@@ -71,8 +78,11 @@ class PasswordResetServiceTest {
 	void resetExpired() {
 		final PasswordResetId resetId = PasswordResetId.random();
 		given(this.readerPasswordMapper.insert(any())).willReturn(1);
-		final PasswordReset passwordReset = new PasswordReset(resetId, ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime.parse("2022-12-06T06:38:31.343307Z").minus(3L, ChronoUnit.DAYS));
-		assertThatThrownBy(() -> this.passwordResetService.reset(passwordReset, "newPassword"))
-				.isInstanceOf(PasswordResetExpiredException.class);
+		final PasswordReset passwordReset = new PasswordReset(resetId,
+				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime
+						.parse("2022-12-06T06:38:31.343307Z").minus(3L, ChronoUnit.DAYS));
+		assertThatThrownBy(
+				() -> this.passwordResetService.reset(passwordReset, "newPassword"))
+						.isInstanceOf(PasswordResetExpiredException.class);
 	}
 }

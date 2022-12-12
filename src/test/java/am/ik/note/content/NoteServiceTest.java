@@ -45,24 +45,24 @@ class NoteServiceTest {
 		final ReaderId readerId = ReaderId.random();
 		final NoteId noteId1 = NoteId.random();
 		final NoteId noteId2 = NoteId.random();
-		given(this.noteMapper.findAll(readerId)).willReturn(List.of(new NoteSummaryBuilder()
-						.withNoteId(noteId1)
-						.withEntryId(101L)
-						.withNoteUrl("https://example.com/note1")
-						.withSubscribed(true),
-				new NoteSummaryBuilder()
-						.withNoteId(noteId2)
-						.withEntryId(102L)
-						.withNoteUrl("https://example.com/note2")
-						.withSubscribed(false)));
-		given(this.entryClient.getEntries()).willReturn(new Entries(List.of(new Entry(101L, new FrontMatter("title1"), null, null, null),
-				new Entry(102L, new FrontMatter("title2"), null, null, null))));
+		given(this.noteMapper.findAll(readerId)).willReturn(List.of(
+				new NoteSummaryBuilder().withNoteId(noteId1).withEntryId(101L)
+						.withNoteUrl("https://example.com/note1").withSubscribed(true),
+				new NoteSummaryBuilder().withNoteId(noteId2).withEntryId(102L)
+						.withNoteUrl("https://example.com/note2").withSubscribed(false)));
+		given(this.entryClient.getEntries()).willReturn(new Entries(
+				List.of(new Entry(101L, new FrontMatter("title1"), null, null, null),
+						new Entry(102L, new FrontMatter("title2"), null, null, null))));
 		final List<NoteSummary> summaries = this.noteService.findAll(readerId);
 
-		assertThat(summaries.stream().map(NoteSummary::title)).containsExactly("title1", "title2");
-		assertThat(summaries.stream().map(NoteSummary::entryId)).containsExactly(101L, 102L);
-		assertThat(summaries.stream().map(NoteSummary::noteUrl)).containsExactly("https://example.com/note1", "https://example.com/note2");
-		assertThat(summaries.stream().map(NoteSummary::subscribed)).containsExactly(true, false);
+		assertThat(summaries.stream().map(NoteSummary::title)).containsExactly("title1",
+				"title2");
+		assertThat(summaries.stream().map(NoteSummary::entryId)).containsExactly(101L,
+				102L);
+		assertThat(summaries.stream().map(NoteSummary::noteUrl)).containsExactly(
+				"https://example.com/note1", "https://example.com/note2");
+		assertThat(summaries.stream().map(NoteSummary::subscribed)).containsExactly(true,
+				false);
 	}
 
 	@Test
@@ -71,9 +71,14 @@ class NoteServiceTest {
 		final ReaderId readerId = ReaderId.random();
 		given(this.noteMapper.findByEntryId(100L))
 				.willReturn(Optional.of(new Note(noteId, 100L, "https://example.com")));
-		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId)).willReturn(1);
-		given(this.entryClient.getEntry(100L)).willReturn(new Entry(100L, new FrontMatter("Hello World!"), "hello", new Author("demo1", OffsetDateTime.MIN), new Author("demo2", OffsetDateTime.MAX)));
-		final NoteDetails noteDetails = this.noteService.findByEntryId(100L, readerId).orElseThrow();
+		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId))
+				.willReturn(1);
+		given(this.entryClient.getEntry(100L))
+				.willReturn(new Entry(100L, new FrontMatter("Hello World!"), "hello",
+						new Author("demo1", OffsetDateTime.MIN),
+						new Author("demo2", OffsetDateTime.MAX)));
+		final NoteDetails noteDetails = this.noteService.findByEntryId(100L, readerId)
+				.orElseThrow();
 		assertThat(noteDetails.noteId()).isEqualTo(noteId);
 		assertThat(noteDetails.entryId()).isEqualTo(100L);
 		assertThat(noteDetails.noteUrl()).isEqualTo("https://example.com");
@@ -94,7 +99,8 @@ class NoteServiceTest {
 		final ReaderId readerId = ReaderId.random();
 		given(this.noteMapper.findByEntryId(100L))
 				.willReturn(Optional.of(new Note(noteId, 100L, "https://example.com")));
-		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId)).willReturn(0);
+		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId))
+				.willReturn(0);
 		assertThatThrownBy(() -> this.noteService.findByEntryId(100L, readerId))
 				.isInstanceOf(NoteNotSubscribedException.class);
 	}
@@ -105,9 +111,14 @@ class NoteServiceTest {
 		final ReaderId readerId = ReaderId.random();
 		given(this.noteMapper.findByNoteId(noteId))
 				.willReturn(Optional.of(new Note(noteId, 100L, "https://example.com")));
-		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId)).willReturn(1);
-		given(this.entryClient.getEntry(100L)).willReturn(new Entry(100L, new FrontMatter("Hello World!"), "hello", new Author("demo1", OffsetDateTime.MIN), new Author("demo2", OffsetDateTime.MAX)));
-		final NoteDetails noteDetails = this.noteService.findByNoteId(noteId, readerId).orElseThrow();
+		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId))
+				.willReturn(1);
+		given(this.entryClient.getEntry(100L))
+				.willReturn(new Entry(100L, new FrontMatter("Hello World!"), "hello",
+						new Author("demo1", OffsetDateTime.MIN),
+						new Author("demo2", OffsetDateTime.MAX)));
+		final NoteDetails noteDetails = this.noteService.findByNoteId(noteId, readerId)
+				.orElseThrow();
 		assertThat(noteDetails.noteId()).isEqualTo(noteId);
 		assertThat(noteDetails.entryId()).isEqualTo(100L);
 		assertThat(noteDetails.noteUrl()).isEqualTo("https://example.com");
@@ -128,7 +139,8 @@ class NoteServiceTest {
 		final ReaderId readerId = ReaderId.random();
 		given(this.noteMapper.findByNoteId(noteId))
 				.willReturn(Optional.of(new Note(noteId, 100L, "https://example.com")));
-		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId)).willReturn(0);
+		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId))
+				.willReturn(0);
 		assertThatThrownBy(() -> this.noteService.findByNoteId(noteId, readerId))
 				.isInstanceOf(NoteNotSubscribedException.class);
 	}
@@ -137,7 +149,8 @@ class NoteServiceTest {
 	void subscribe() {
 		final NoteId noteId = NoteId.random();
 		final ReaderId readerId = ReaderId.random();
-		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId)).willReturn(0);
+		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId))
+				.willReturn(0);
 		final SubscriptionStatus status = this.noteService.subscribe(noteId, readerId);
 		assertThat(status).isEqualTo(SubscriptionStatus.NEW);
 	}
@@ -146,7 +159,8 @@ class NoteServiceTest {
 	void subscribeExisting() {
 		final NoteId noteId = NoteId.random();
 		final ReaderId readerId = ReaderId.random();
-		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId)).willReturn(1);
+		given(this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId))
+				.willReturn(1);
 		final SubscriptionStatus status = this.noteService.subscribe(noteId, readerId);
 		assertThat(status).isEqualTo(SubscriptionStatus.EXISTING);
 	}

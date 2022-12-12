@@ -12,11 +12,15 @@ public class ReaderUserDetailsService implements UserDetailsService {
 	}
 
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		final Reader reader = (username.contains("@") ? this.readerMapper.findByEmail(username) : this.readerMapper.findById(ReaderId.valueOf(username)))
-				.orElseThrow(() -> {
-					throw new UsernameNotFoundException("Reader (" + username + ") is not found.");
-				});
+	public UserDetails loadUserByUsername(String username)
+			throws UsernameNotFoundException {
+		final Reader reader = (username.contains("@")
+				? this.readerMapper.findByEmail(username)
+				: this.readerMapper.findById(ReaderId.valueOf(username)))
+						.orElseThrow(() -> {
+							throw new UsernameNotFoundException(
+									"Reader (" + username + ") is not found.");
+						});
 		return new ReaderUserDetails(reader);
 	}
 }

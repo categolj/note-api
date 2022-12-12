@@ -29,7 +29,9 @@ public class PasswordResetController {
 
 	private final IdGenerator idGenerator;
 
-	public PasswordResetController(PasswordResetService passwordResetService, PasswordResetMapper passwordResetMapper, ReaderMapper readerMapper, IdGenerator idGenerator) {
+	public PasswordResetController(PasswordResetService passwordResetService,
+			PasswordResetMapper passwordResetMapper, ReaderMapper readerMapper,
+			IdGenerator idGenerator) {
 		this.passwordResetService = passwordResetService;
 		this.passwordResetMapper = passwordResetMapper;
 		this.readerMapper = readerMapper;
@@ -40,7 +42,9 @@ public class PasswordResetController {
 	public ResponseEntity<?> sendLink(@RequestBody SendLinkInput input) {
 		final String email = input.email();
 		return ResponseEntity.of(this.readerMapper.findByEmail(email)
-				.map(reader -> new PasswordReset(new PasswordResetId(idGenerator.generateId()), reader.readerId(), OffsetDateTime.now()))
+				.map(reader -> new PasswordReset(
+						new PasswordResetId(idGenerator.generateId()), reader.readerId(),
+						OffsetDateTime.now()))
 				.map(this.passwordResetService::sendLink)
 				.map(count -> Map.of("message", "Sent a link.")));
 	}
@@ -48,12 +52,15 @@ public class PasswordResetController {
 	@PostMapping(path = "")
 	public ResponseEntity<?> reset(@RequestBody PasswordResetInput input) {
 		try {
-			return ResponseEntity.of(this.passwordResetMapper.findByResetId(input.toPasswordResetId())
-					.map(passwordReset -> this.passwordResetService.reset(passwordReset, input.newPassword()))
-					.map(count -> Map.of("message", "Reset the password")));
+			return ResponseEntity
+					.of(this.passwordResetMapper.findByResetId(input.toPasswordResetId())
+							.map(passwordReset -> this.passwordResetService
+									.reset(passwordReset, input.newPassword()))
+							.map(count -> Map.of("message", "Reset the password")));
 		}
 		catch (PasswordResetExpiredException e) {
-			return ResponseEntity.badRequest().body(Map.of("message", "The given link has been already expired."));
+			return ResponseEntity.badRequest()
+					.body(Map.of("message", "The given link has been already expired."));
 		}
 	}
 

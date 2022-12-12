@@ -34,8 +34,10 @@ class TokenControllerTest {
 	void token_200_by_email() throws Exception {
 		final ReaderId readerId = ReaderId.random();
 		given(this.readerMapper.findByEmail("demo@example.com"))
-				.willReturn(Optional.of(new Reader(readerId, "demo@example.com", "{noop}password", ReaderState.ENABLED)));
-		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
+				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
+						"{noop}password", ReaderState.ENABLED)));
+		this.mockMvc
+				.perform(MockMvcRequestBuilders.post("/oauth/token")
 						.param("username", "demo@example.com")
 						.param("password", "password"))
 				.andExpect(status().isOk())
@@ -51,8 +53,10 @@ class TokenControllerTest {
 	void token_200_by_readerId() throws Exception {
 		final ReaderId readerId = ReaderId.random();
 		given(this.readerMapper.findById(readerId))
-				.willReturn(Optional.of(new Reader(readerId, "demo@example.com", "{noop}password", ReaderState.ENABLED)));
-		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
+				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
+						"{noop}password", ReaderState.ENABLED)));
+		this.mockMvc
+				.perform(MockMvcRequestBuilders.post("/oauth/token")
 						.param("username", readerId.toString())
 						.param("password", "password"))
 				.andExpect(status().isOk())
@@ -69,8 +73,7 @@ class TokenControllerTest {
 		given(this.readerMapper.findByEmail("demo@example.com"))
 				.willReturn(Optional.empty());
 		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
-						.param("username", "demo@example.com")
-						.param("password", "password"))
+				.param("username", "demo@example.com").param("password", "password"))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.error").value("unauthorized"))
 				.andExpect(jsonPath("$.error_description").value("Bad credentials"));
@@ -80,10 +83,10 @@ class TokenControllerTest {
 	void token_401_bad_password() throws Exception {
 		final ReaderId readerId = ReaderId.random();
 		given(this.readerMapper.findByEmail("demo@example.com"))
-				.willReturn(Optional.of(new Reader(readerId, "demo@example.com", "{noop}password", ReaderState.ENABLED)));
+				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
+						"{noop}password", ReaderState.ENABLED)));
 		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
-						.param("username", "demo@example.com")
-						.param("password", "badpassword"))
+				.param("username", "demo@example.com").param("password", "badpassword"))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.error").value("unauthorized"))
 				.andExpect(jsonPath("$.error_description").value("Bad credentials"));
@@ -93,10 +96,10 @@ class TokenControllerTest {
 	void token_401_disabled() throws Exception {
 		final ReaderId readerId = ReaderId.random();
 		given(this.readerMapper.findByEmail("demo@example.com"))
-				.willReturn(Optional.of(new Reader(readerId, "demo@example.com", "{noop}password", ReaderState.DISABLED)));
+				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
+						"{noop}password", ReaderState.DISABLED)));
 		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
-						.param("username", "demo@example.com")
-						.param("password", "password"))
+				.param("username", "demo@example.com").param("password", "password"))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.error").value("unauthorized"))
 				.andExpect(jsonPath("$.error_description").value("User is disabled"));
@@ -106,12 +109,12 @@ class TokenControllerTest {
 	void token_401_locked() throws Exception {
 		final ReaderId readerId = ReaderId.random();
 		given(this.readerMapper.findByEmail("demo@example.com"))
-				.willReturn(Optional.of(new Reader(readerId, "demo@example.com", "{noop}password", ReaderState.LOCKED)));
+				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
+						"{noop}password", ReaderState.LOCKED)));
 		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
-						.param("username", "demo@example.com")
-						.param("password", "password"))
+				.param("username", "demo@example.com").param("password", "password"))
 				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.error").value("unauthorized"))
-				.andExpect(jsonPath("$.error_description").value("User account is locked"));
+				.andExpect(jsonPath("$.error").value("unauthorized")).andExpect(
+						jsonPath("$.error_description").value("User account is locked"));
 	}
 }

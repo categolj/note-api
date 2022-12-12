@@ -21,7 +21,8 @@ public class NoteService {
 
 	private final EntryClient entryClient;
 
-	public NoteService(NoteMapper noteMapper, NoteReaderMapper noteReaderMapper, EntryClient entryClient) {
+	public NoteService(NoteMapper noteMapper, NoteReaderMapper noteReaderMapper,
+			EntryClient entryClient) {
 		this.noteMapper = noteMapper;
 		this.noteReaderMapper = noteReaderMapper;
 		this.entryClient = entryClient;
@@ -33,12 +34,11 @@ public class NoteService {
 		if (summaries.isEmpty()) {
 			return List.of();
 		}
-		final Map<Long, String> entryMap = this.entryClient.getEntries().content().stream()
-				.collect(toUnmodifiableMap(Entry::entryId, e -> e.frontMatter().title()));
-		return summaries
+		final Map<Long, String> entryMap = this.entryClient.getEntries().content()
 				.stream()
-				.map(b -> b.withTitle(entryMap.get(b.getEntryId())).build())
-				.toList();
+				.collect(toUnmodifiableMap(Entry::entryId, e -> e.frontMatter().title()));
+		return summaries.stream()
+				.map(b -> b.withTitle(entryMap.get(b.getEntryId())).build()).toList();
 	}
 
 	@Transactional(readOnly = true)
@@ -54,17 +54,21 @@ public class NoteService {
 	}
 
 	private NoteDetails toDetails(Note note, ReaderId readerId) {
-		int count = this.noteReaderMapper.countByNoteIdAndReaderId(note.noteId(), readerId);
+		int count = this.noteReaderMapper.countByNoteIdAndReaderId(note.noteId(),
+				readerId);
 		if (count <= 0) {
-			throw new NoteNotSubscribedException("You are not allowed to access to the entry.", note.noteUrl());
+			throw new NoteNotSubscribedException(
+					"You are not allowed to access to the entry.", note.noteUrl());
 		}
 		final Entry entry = this.entryClient.getEntry(note.entryId());
-		return new NoteDetails(note.noteId(), note.entryId(), entry.content(), entry.frontMatter(), note.noteUrl(), entry.created(), entry.updated());
+		return new NoteDetails(note.noteId(), note.entryId(), entry.content(),
+				entry.frontMatter(), note.noteUrl(), entry.created(), entry.updated());
 	}
 
 	@Transactional
 	public SubscriptionStatus subscribe(NoteId noteId, ReaderId readerId) {
-		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId);
+		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId,
+				readerId);
 		if (count > 0) {
 			return SubscriptionStatus.EXISTING;
 		}

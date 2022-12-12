@@ -23,7 +23,8 @@ public class ReaderController {
 
 	private final ActivationLinkMapper activationLinkMapper;
 
-	public ReaderController(ReaderService readerService, ActivationLinkMapper activationLinkMapper) {
+	public ReaderController(ReaderService readerService,
+			ActivationLinkMapper activationLinkMapper) {
 		this.readerService = readerService;
 		this.activationLinkMapper = activationLinkMapper;
 	}
@@ -31,19 +32,23 @@ public class ReaderController {
 	@PostMapping(path = "")
 	public ResponseEntity<?> createReader(@RequestBody CreateReaderInput input) {
 		this.readerService.createReader(input.email(), input.rawPassword());
-		return ResponseEntity.ok(Map.of("message", "Sent an activation link to " + input.email()));
+		return ResponseEntity
+				.ok(Map.of("message", "Sent an activation link to " + input.email()));
 	}
 
 	@PostMapping(path = "{readerId:[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}}/activations/{activationLinkId}")
-	public ResponseEntity<?> activate(@PathVariable("readerId") ReaderId readerId, @PathVariable("activationLinkId") ActivationLinkId activationLinkId) {
+	public ResponseEntity<?> activate(@PathVariable("readerId") ReaderId readerId,
+			@PathVariable("activationLinkId") ActivationLinkId activationLinkId) {
 		try {
 			return ResponseEntity.of(this.activationLinkMapper.findById(activationLinkId)
-					.filter(activationLink -> Objects.equals(activationLink.readerId(), readerId))
+					.filter(activationLink -> Objects.equals(activationLink.readerId(),
+							readerId))
 					.map(this.readerService::activate)
 					.map(id -> Map.of("message", "Activated " + id)));
 		}
 		catch (ActivationLinkExpiredException e) {
-			return ResponseEntity.badRequest().body(Map.of("message", "The given link has been already expired."));
+			return ResponseEntity.badRequest()
+					.body(Map.of("message", "The given link has been already expired."));
 		}
 	}
 

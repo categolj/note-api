@@ -56,45 +56,71 @@ class ReaderServiceTest {
 	void createReader(CapturedOutput capture) {
 		this.idGenerator.putId(UUID.fromString("b734fc36-9985-45c0-adf2-f799e8d641e9"));
 		this.idGenerator.putId(UUID.fromString("931f3d49-4f48-4214-bab3-c5b659b6b24c"));
-		final ArgumentCaptor<ReaderPassword> captor = ArgumentCaptor.forClass(ReaderPassword.class);
-		given(this.readerMapper.findByEmail("demo@example.com")).willReturn(Optional.empty());
-		final ActivationLink activationLink = this.readerService.createReader("demo@example.com", "password");
-		assertThat(activationLink.readerId()).isEqualTo(ReaderId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
-		assertThat(activationLink.activationId()).isEqualTo(ActivationLinkId.valueOf("931f3d49-4f48-4214-bab3-c5b659b6b24c"));
-		assertThat(activationLink.createdAt()).isEqualTo(OffsetDateTime.parse("2022-12-06T06:38:31.343307Z"));
-		assertThat(capture.toString()).contains("sendActivationLink: demo@example.com 931f3d49-4f48-4214-bab3-c5b659b6b24c");
+		final ArgumentCaptor<ReaderPassword> captor = ArgumentCaptor
+				.forClass(ReaderPassword.class);
+		given(this.readerMapper.findByEmail("demo@example.com"))
+				.willReturn(Optional.empty());
+		final ActivationLink activationLink = this.readerService
+				.createReader("demo@example.com", "password");
+		assertThat(activationLink.readerId())
+				.isEqualTo(ReaderId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
+		assertThat(activationLink.activationId()).isEqualTo(
+				ActivationLinkId.valueOf("931f3d49-4f48-4214-bab3-c5b659b6b24c"));
+		assertThat(activationLink.createdAt())
+				.isEqualTo(OffsetDateTime.parse("2022-12-06T06:38:31.343307Z"));
+		assertThat(capture.toString()).contains(
+				"sendActivationLink: demo@example.com 931f3d49-4f48-4214-bab3-c5b659b6b24c");
 		verify(this.readerPasswordMapper).insert(captor.capture());
 		final ReaderPassword readerPassword = captor.getValue();
-		assertThat(readerPassword.readerId()).isEqualTo(ReaderId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
+		assertThat(readerPassword.readerId())
+				.isEqualTo(ReaderId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
 		assertThat(readerPassword.hashedPassword()).isEqualTo("{noop}password");
 	}
 
 	@Test
 	void createReaderExisting(CapturedOutput capture) {
 		this.idGenerator.putId(UUID.fromString("b734fc36-9985-45c0-adf2-f799e8d641e9"));
-		final ArgumentCaptor<ReaderPassword> captor = ArgumentCaptor.forClass(ReaderPassword.class);
-		given(this.readerMapper.findByEmail("demo@example.com")).willReturn(Optional.of(new Reader(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), "demo@example.com", "aa", ReaderState.DISABLED)));
-		final ActivationLink activationLink = this.readerService.createReader("demo@example.com", "password");
-		assertThat(activationLink.readerId()).isEqualTo(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"));
-		assertThat(activationLink.activationId()).isEqualTo(ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
-		assertThat(activationLink.createdAt()).isEqualTo(OffsetDateTime.parse("2022-12-06T06:38:31.343307Z"));
-		assertThat(capture.toString()).contains("sendActivationLink: demo@example.com b734fc36-9985-45c0-adf2-f799e8d641e9");
+		final ArgumentCaptor<ReaderPassword> captor = ArgumentCaptor
+				.forClass(ReaderPassword.class);
+		given(this.readerMapper.findByEmail("demo@example.com")).willReturn(Optional
+				.of(new Reader(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
+						"demo@example.com", "aa", ReaderState.DISABLED)));
+		final ActivationLink activationLink = this.readerService
+				.createReader("demo@example.com", "password");
+		assertThat(activationLink.readerId())
+				.isEqualTo(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"));
+		assertThat(activationLink.activationId()).isEqualTo(
+				ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
+		assertThat(activationLink.createdAt())
+				.isEqualTo(OffsetDateTime.parse("2022-12-06T06:38:31.343307Z"));
+		assertThat(capture.toString()).contains(
+				"sendActivationLink: demo@example.com b734fc36-9985-45c0-adf2-f799e8d641e9");
 		verify(this.readerPasswordMapper).insert(captor.capture());
 		final ReaderPassword readerPassword = captor.getValue();
-		assertThat(readerPassword.readerId()).isEqualTo(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"));
+		assertThat(readerPassword.readerId())
+				.isEqualTo(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"));
 		assertThat(readerPassword.hashedPassword()).isEqualTo("{noop}password");
 	}
 
 	@Test
 	void activate() {
-		final ActivationLink activationLink = new ActivationLink(ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"), ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime.parse("2022-12-06T06:38:31.343307Z").minus(3L, ChronoUnit.DAYS).plus(1L, ChronoUnit.MINUTES));
-		final ActivationLinkId activationLinkId = this.readerService.activate(activationLink);
-		assertThat(activationLinkId).isEqualTo(ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
+		final ActivationLink activationLink = new ActivationLink(
+				ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"),
+				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
+				OffsetDateTime.parse("2022-12-06T06:38:31.343307Z")
+						.minus(3L, ChronoUnit.DAYS).plus(1L, ChronoUnit.MINUTES));
+		final ActivationLinkId activationLinkId = this.readerService
+				.activate(activationLink);
+		assertThat(activationLinkId).isEqualTo(
+				ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
 	}
 
 	@Test
 	void activateExpired() {
-		final ActivationLink activationLink = new ActivationLink(ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"), ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime.parse("2022-12-06T06:38:31.343307Z").minus(3L, ChronoUnit.DAYS));
+		final ActivationLink activationLink = new ActivationLink(
+				ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"),
+				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime
+						.parse("2022-12-06T06:38:31.343307Z").minus(3L, ChronoUnit.DAYS));
 		assertThatThrownBy(() -> {
 			this.readerService.activate(activationLink);
 		}).isInstanceOf(ActivationLinkExpiredException.class);

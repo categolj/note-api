@@ -42,12 +42,12 @@ public class NoteController {
 	public ResponseEntity<?> getNotes(@AuthenticationPrincipal Jwt jwt) {
 		final ReaderId readerId = ReaderId.valueOf(jwt.getSubject());
 		return ResponseEntity.ok(this.noteService.findAll(readerId).stream()
-				.map(NoteSummary::excludeNoteId)
-				.toList());
+				.map(NoteSummary::excludeNoteId).toList());
 	}
 
 	@GetMapping(path = "/{entryId:[0-9]+}")
-	public ResponseEntity<?> getNoteByEntryId(@PathVariable("entryId") Long entryId, @AuthenticationPrincipal Jwt jwt) {
+	public ResponseEntity<?> getNoteByEntryId(@PathVariable("entryId") Long entryId,
+			@AuthenticationPrincipal Jwt jwt) {
 		try {
 			final ReaderId readerId = ReaderId.valueOf(jwt.getSubject());
 			return ResponseEntity.of(this.noteService.findByEntryId(entryId, readerId)
@@ -60,7 +60,8 @@ public class NoteController {
 	}
 
 	@GetMapping(path = "/{noteId:[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}}")
-	public ResponseEntity<?> getNoteByNoteId(@PathVariable("noteId") NoteId noteId, @AuthenticationPrincipal Jwt jwt) {
+	public ResponseEntity<?> getNoteByNoteId(@PathVariable("noteId") NoteId noteId,
+			@AuthenticationPrincipal Jwt jwt) {
 		try {
 			final ReaderId readerId = ReaderId.valueOf(jwt.getSubject());
 			return ResponseEntity.of(this.noteService.findByNoteId(noteId, readerId));
@@ -78,23 +79,24 @@ public class NoteController {
 	}
 
 	@PutMapping(path = "/{entryId:[0-9]+}")
-	public ResponseEntity<?> putNote(@PathVariable("entryId") Long entryId, @RequestBody PutNoteInput input) {
+	public ResponseEntity<?> putNote(@PathVariable("entryId") Long entryId,
+			@RequestBody PutNoteInput input) {
 		this.noteMapper.insertNote(input.toNoteId(), entryId, input.noteUrl());
 		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping(path = "/{noteId:[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}}/subscribe")
-	public ResponseEntity<?> subscribe(@PathVariable("noteId") NoteId noteId, @AuthenticationPrincipal Jwt jwt) {
-		return this.noteMapper.findByNoteId(noteId)
-				.map(note -> {
-					final ReaderId readerId = ReaderId.valueOf(jwt.getSubject());
-					final SubscriptionStatus status = this.noteService.subscribe(noteId, readerId);
-					final Long entryId = note.entryId();
-					return ResponseEntity.ok(new SubscribeOutput(entryId, status.isAlreadySubscribed()));
-				})
-				.orElseGet(() -> ResponseEntity.notFound().build());
+	public ResponseEntity<?> subscribe(@PathVariable("noteId") NoteId noteId,
+			@AuthenticationPrincipal Jwt jwt) {
+		return this.noteMapper.findByNoteId(noteId).map(note -> {
+			final ReaderId readerId = ReaderId.valueOf(jwt.getSubject());
+			final SubscriptionStatus status = this.noteService.subscribe(noteId,
+					readerId);
+			final Long entryId = note.entryId();
+			return ResponseEntity
+					.ok(new SubscribeOutput(entryId, status.isAlreadySubscribed()));
+		}).orElseGet(() -> ResponseEntity.notFound().build());
 	}
-
 
 	record PutNoteInput(UUID noteId, String noteUrl) {
 		public NoteId toNoteId() {

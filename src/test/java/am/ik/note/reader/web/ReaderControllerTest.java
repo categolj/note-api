@@ -43,13 +43,13 @@ class ReaderControllerTest {
 
 	@Test
 	void createReader_200() throws Exception {
-		this.mockMvc.perform(post("/readers")
-						.contentType(MediaType.APPLICATION_JSON)
+		this.mockMvc
+				.perform(post("/readers").contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{"email": "demo@example.com", "rawPassword":  "password"}
 								"""))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.message").value("Sent an activation link to demo@example.com"));
+				.andExpect(status().isOk()).andExpect(jsonPath("$.message")
+						.value("Sent an activation link to demo@example.com"));
 	}
 
 	@Test
@@ -57,9 +57,12 @@ class ReaderControllerTest {
 		final ActivationLinkId activationLinkId = ActivationLinkId.random();
 		final ReaderId readerId = ReaderId.random();
 		given(this.activationLinkMapper.findById(activationLinkId))
-				.willReturn(Optional.of(new ActivationLink(activationLinkId, readerId, OffsetDateTime.now())));
+				.willReturn(Optional.of(new ActivationLink(activationLinkId, readerId,
+						OffsetDateTime.now())));
 		given(this.readerService.activate(any())).willReturn(activationLinkId);
-		this.mockMvc.perform(post("/readers/%s/activations/%s".formatted(readerId, activationLinkId)))
+		this.mockMvc
+				.perform(post("/readers/%s/activations/%s".formatted(readerId,
+						activationLinkId)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.message").value("Activated " + activationLinkId));
 	}
@@ -69,11 +72,14 @@ class ReaderControllerTest {
 		final ActivationLinkId activationLinkId = ActivationLinkId.random();
 		final ReaderId readerId = ReaderId.random();
 		given(this.activationLinkMapper.findById(activationLinkId))
-				.willReturn(Optional.of(new ActivationLink(activationLinkId, readerId, OffsetDateTime.now())));
-		given(this.readerService.activate(any())).willThrow(new ActivationLinkExpiredException());
-		this.mockMvc.perform(post("/readers/%s/activations/%s".formatted(readerId, activationLinkId)))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("The given link has been already expired."));
+				.willReturn(Optional.of(new ActivationLink(activationLinkId, readerId,
+						OffsetDateTime.now())));
+		given(this.readerService.activate(any()))
+				.willThrow(new ActivationLinkExpiredException());
+		this.mockMvc.perform(
+				post("/readers/%s/activations/%s".formatted(readerId, activationLinkId)))
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.message")
+						.value("The given link has been already expired."));
 	}
 
 	@Test
@@ -81,8 +87,11 @@ class ReaderControllerTest {
 		final ActivationLinkId activationLinkId = ActivationLinkId.random();
 		final ReaderId readerId = ReaderId.random();
 		given(this.activationLinkMapper.findById(activationLinkId))
-				.willReturn(Optional.of(new ActivationLink(activationLinkId, readerId, OffsetDateTime.now())));
-		this.mockMvc.perform(post("/readers/%s/activations/%s".formatted("def", activationLinkId)))
+				.willReturn(Optional.of(new ActivationLink(activationLinkId, readerId,
+						OffsetDateTime.now())));
+		this.mockMvc
+				.perform(post(
+						"/readers/%s/activations/%s".formatted("def", activationLinkId)))
 				.andExpect(status().isNotFound());
 	}
 }

@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @JdbcTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @Import({ NoteMapper.class, NoteReaderMapper.class, ReaderMapper.class })
@@ -26,7 +25,6 @@ class NoteReaderMapperTest {
 	@Autowired
 	ReaderMapper readerMapper;
 
-
 	@Test
 	void insertAndCount() {
 		final NoteId noteId = NoteId.random();
@@ -34,10 +32,10 @@ class NoteReaderMapperTest {
 		this.noteMapper.insertNote(noteId, 101L, "https://example.com/note1");
 		this.readerMapper.insert(readerId, "reader1@example.com");
 		this.noteReaderMapper.insertNoteReader(noteId, readerId);
-		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId);
+		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId,
+				readerId);
 		assertThat(count).isEqualTo(1);
 	}
-
 
 	@Test
 	void insertAndCount_notFound() {
@@ -45,7 +43,8 @@ class NoteReaderMapperTest {
 		final ReaderId readerId = ReaderId.random();
 		this.noteMapper.insertNote(noteId, 101L, "https://example.com/note1");
 		this.readerMapper.insert(readerId, "reader1@example.com");
-		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId);
+		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId,
+				readerId);
 		assertThat(count).isEqualTo(0);
 	}
 }

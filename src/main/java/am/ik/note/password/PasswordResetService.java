@@ -29,7 +29,10 @@ public class PasswordResetService {
 
 	private final Clock clock;
 
-	public PasswordResetService(PasswordResetMapper passwordResetMapper, ReaderPasswordMapper readerPasswordMapper, PasswordResetSender passwordResetSender, PasswordEncoder passwordEncoder, ReaderInitializer readerInitializer, Clock clock) {
+	public PasswordResetService(PasswordResetMapper passwordResetMapper,
+			ReaderPasswordMapper readerPasswordMapper,
+			PasswordResetSender passwordResetSender, PasswordEncoder passwordEncoder,
+			ReaderInitializer readerInitializer, Clock clock) {
 		this.passwordResetMapper = passwordResetMapper;
 		this.readerPasswordMapper = readerPasswordMapper;
 		this.passwordResetSender = passwordResetSender;
@@ -40,7 +43,8 @@ public class PasswordResetService {
 
 	@Transactional
 	public int sendLink(PasswordReset passwordReset) {
-		final int count = this.passwordResetMapper.insert(passwordReset.resetId(), passwordReset.readerId());
+		final int count = this.passwordResetMapper.insert(passwordReset.resetId(),
+				passwordReset.readerId());
 		log.info("Send Link: {}", passwordReset);
 		this.passwordResetSender.sendLink(passwordReset);
 		return count;
@@ -55,7 +59,8 @@ public class PasswordResetService {
 		this.readerPasswordMapper.deleteByReaderId(readerId);
 		this.passwordResetMapper.deleteByResetId(passwordReset.resetId());
 		final String encodedPassword = this.passwordEncoder.encode(newPassword);
-		final int count = this.readerPasswordMapper.insert(new ReaderPassword(readerId, encodedPassword));
+		final int count = this.readerPasswordMapper
+				.insert(new ReaderPassword(readerId, encodedPassword));
 		this.readerInitializer.initialize(readerId);
 		this.passwordResetSender.notifyReset(passwordReset);
 		return count;

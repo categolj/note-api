@@ -50,20 +50,19 @@ public class SecurityConfig {
 	@Bean
 	@Order(2)
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(OPTIONS).permitAll()
-						.requestMatchers("/info").permitAll()
-						.requestMatchers("/oauth/token").permitAll()
-						.requestMatchers("/password_reset", "/password_reset/**").permitAll()
-						.requestMatchers(POST, "/readers/*/activations/*", "/readers").permitAll()
-						.requestMatchers(GET, "/notes", "/notes/**").hasAnyAuthority("SCOPE_note:read", "SCOPE_note:admin")
-						.requestMatchers(POST, "/notes/*/subscribe").hasAnyAuthority("SCOPE_note:read", "SCOPE_note:admin")
-						.requestMatchers(POST, "/notes/**").hasAnyAuthority("SCOPE_note:admin")
-						.requestMatchers(PUT, "/notes/**").hasAnyAuthority("SCOPE_note:admin")
-						.requestMatchers(DELETE, "/notes").hasAnyAuthority("SCOPE_note:admin")
-						.anyRequest().hasAnyAuthority("SCOPE_note:admin")
-				)
+		return http.authorizeHttpRequests(auth -> auth.requestMatchers(OPTIONS)
+				.permitAll().requestMatchers("/info").permitAll()
+				.requestMatchers("/oauth/token").permitAll()
+				.requestMatchers("/password_reset", "/password_reset/**").permitAll()
+				.requestMatchers(POST, "/readers/*/activations/*", "/readers").permitAll()
+				.requestMatchers(GET, "/notes", "/notes/**")
+				.hasAnyAuthority("SCOPE_note:read", "SCOPE_note:admin")
+				.requestMatchers(POST, "/notes/*/subscribe")
+				.hasAnyAuthority("SCOPE_note:read", "SCOPE_note:admin")
+				.requestMatchers(POST, "/notes/**").hasAnyAuthority("SCOPE_note:admin")
+				.requestMatchers(PUT, "/notes/**").hasAnyAuthority("SCOPE_note:admin")
+				.requestMatchers(DELETE, "/notes").hasAnyAuthority("SCOPE_note:admin")
+				.anyRequest().hasAnyAuthority("SCOPE_note:admin"))
 				.csrf(AbstractHttpConfigurer::disable)
 				.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
 				.cors(Customizer.withDefaults())
@@ -79,7 +78,8 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+	public AuthenticationManager authenticationManager(
+			UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
 		final DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
 		authenticationProvider.setUserDetailsService(userDetailsService);
 		authenticationProvider.setPasswordEncoder(passwordEncoder);
@@ -99,7 +99,8 @@ public class SecurityConfig {
 
 	@Bean
 	public JwtEncoder jwtEncoder() {
-		final JWK jwk = new RSAKey.Builder(this.rsaKeys.publicKey()).privateKey(this.rsaKeys.privateKey()).build();
+		final JWK jwk = new RSAKey.Builder(this.rsaKeys.publicKey())
+				.privateKey(this.rsaKeys.privateKey()).build();
 		final JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
 		return new NimbusJwtEncoder(jwks);
 	}

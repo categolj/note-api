@@ -16,7 +16,8 @@ public class ReaderPasswordMapper {
 	public int insert(ReaderPassword readerPassword) {
 		return this.jdbcTemplate.update("""
 				INSERT INTO reader_password(reader_id, hashed_password) VALUES (?, ?)
-				""", readerPassword.readerId().toString(), readerPassword.hashedPassword());
+				""", readerPassword.readerId().toString(),
+				readerPassword.hashedPassword());
 	}
 
 	@Transactional

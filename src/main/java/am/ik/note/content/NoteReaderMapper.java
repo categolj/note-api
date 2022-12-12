@@ -14,7 +14,6 @@ public class NoteReaderMapper {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
-
 	public int countByNoteIdAndReaderId(NoteId noteId, ReaderId readerId) {
 		final Integer count = this.jdbcTemplate.queryForObject("""
 				SELECT COUNT(*)

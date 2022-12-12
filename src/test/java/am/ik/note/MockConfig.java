@@ -20,12 +20,14 @@ public class MockConfig {
 
 	@Bean
 	public Clock clock() {
-		return Clock.fixed(Instant.parse("2022-12-06T06:38:31.343307Z"), ZoneId.of("UTC"));
+		return Clock.fixed(Instant.parse("2022-12-06T06:38:31.343307Z"),
+				ZoneId.of("UTC"));
 	}
 
 	@Bean
 	@SuppressWarnings("deprecation")
 	public PasswordEncoder passwordEncoder() {
-		return new DelegatingPasswordEncoder("noop", Map.of("noop", NoOpPasswordEncoder.getInstance()));
+		return new DelegatingPasswordEncoder("noop",
+				Map.of("noop", NoOpPasswordEncoder.getInstance()));
 	}
 }

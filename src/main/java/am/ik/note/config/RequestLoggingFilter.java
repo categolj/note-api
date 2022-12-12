@@ -13,7 +13,7 @@ public class RequestLoggingFilter extends CommonsRequestLoggingFilter {
 		super.setIncludeHeaders(true);
 		super.setIncludeClientInfo(true);
 		super.setHeaderPredicate(s -> !s.equalsIgnoreCase("authorization")
-									  && !s.equalsIgnoreCase("cookie"));
+				&& !s.equalsIgnoreCase("cookie"));
 	}
 
 	@Override

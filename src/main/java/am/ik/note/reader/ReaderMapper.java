@@ -19,7 +19,8 @@ public class ReaderMapper {
 		final String hashedPassword = rs.getString("hashed_password");
 		final ReaderId id = ReaderId.valueOf(rs.getString("reader_id"));
 		final String readerState = rs.getString("reader_state");
-		return new Reader(id, email, hashedPassword, ReaderState.valueOf(readerState.toUpperCase()));
+		return new Reader(id, email, hashedPassword,
+				ReaderState.valueOf(readerState.toUpperCase()));
 	};
 
 	public ReaderMapper(JdbcTemplate jdbcTemplate) {
@@ -27,27 +28,31 @@ public class ReaderMapper {
 	}
 
 	public Optional<Reader> findById(ReaderId readerId) {
-		return wrapQuery(() -> this.jdbcTemplate.queryForObject("""
-				SELECT r.reader_id, r.email, rp.hashed_password, r.reader_state, r.created_at 
-				FROM reader AS r 
-					LEFT JOIN reader_password rp on r.reader_id = rp.reader_id 
-				WHERE r.reader_id = ?
-				""", this.readerRowMapper, readerId.toString()));
+		return wrapQuery(() -> this.jdbcTemplate.queryForObject(
+				"""
+						SELECT r.reader_id, r.email, rp.hashed_password, r.reader_state, r.created_at
+						FROM reader AS r
+							LEFT JOIN reader_password rp on r.reader_id = rp.reader_id
+						WHERE r.reader_id = ?
+						""",
+				this.readerRowMapper, readerId.toString()));
 	}
 
 	public Optional<Reader> findByEmail(String email) {
-		return wrapQuery(() -> this.jdbcTemplate.queryForObject("""
-				SELECT r.reader_id, r.email, rp.hashed_password, r.reader_state, r.created_at 
-				FROM reader AS r 
-					LEFT JOIN reader_password rp on r.reader_id = rp.reader_id 
-				WHERE r.email = ?
-				""", this.readerRowMapper, email));
+		return wrapQuery(() -> this.jdbcTemplate.queryForObject(
+				"""
+						SELECT r.reader_id, r.email, rp.hashed_password, r.reader_state, r.created_at
+						FROM reader AS r
+							LEFT JOIN reader_password rp on r.reader_id = rp.reader_id
+						WHERE r.email = ?
+						""",
+				this.readerRowMapper, email));
 	}
 
 	public List<Reader> findAll() {
 		return this.jdbcTemplate.query("""
-				SELECT reader_id, email, '' AS hashed_password, reader_state, created_at 
-				FROM reader 
+				SELECT reader_id, email, '' AS hashed_password, reader_state, created_at
+				FROM reader
 				ORDER BY created_at DESC
 				""", this.readerRowMapper);
 	}
