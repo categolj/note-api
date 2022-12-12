@@ -32,6 +32,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.ArgumentMatchers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -79,6 +80,9 @@ public class End2EndIntegrationTest {
 
 	@MockBean
 	SendGrid sendGrid;
+
+	@MockBean
+	InfoEndpoint infoEndpoint;
 
 	WebTestClient webTestClient;
 
