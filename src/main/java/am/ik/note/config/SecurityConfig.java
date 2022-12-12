@@ -53,6 +53,7 @@ public class SecurityConfig {
 		return http
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(OPTIONS).permitAll()
+						.requestMatchers("/info").permitAll()
 						.requestMatchers("/oauth/token").permitAll()
 						.requestMatchers("/password_reset", "/password_reset/**").permitAll()
 						.requestMatchers(POST, "/readers/*/activations/*", "/readers").permitAll()

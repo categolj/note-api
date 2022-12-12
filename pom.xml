@@ -128,6 +128,23 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<layers>
+						<enabled>true</enabled>
+					</layers>
+					<additionalProperties>
+						<spring.boot.version>${project.parent.version}
+						</spring.boot.version>
+						<spring.framework.version>${spring-framework.version}
+						</spring.framework.version>
+						<spring.security.version>${spring-security.version}
+						</spring.security.version>
+					</additionalProperties>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>io.github.git-commit-id</groupId>
+				<artifactId>git-commit-id-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
