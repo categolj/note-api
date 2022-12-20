@@ -1,11 +1,13 @@
 package am.ik.note;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import am.ik.note.content.NoteId;
 import am.ik.note.content.NoteMapper;
+import am.ik.note.entry.Author;
 import am.ik.note.entry.Entries;
 import am.ik.note.entry.Entry;
 import am.ik.note.entry.EntryClient;
@@ -152,10 +154,14 @@ public class End2EndIntegrationTest {
 	@Order(5)
 	void checkAvailableNoteList() {
 		given(this.entryClient.getEntries()).willReturn(new Entries(List.of(
-				new Entry(100L, new FrontMatter("entry 100"), null, null, null),
-				new Entry(200L, new FrontMatter("entry 200"), null, null, null),
-				new Entry(300L, new FrontMatter("entry 300"), null, null, null),
-				new Entry(400L, new FrontMatter("entry 400"), null, null, null))));
+				new Entry(100L, new FrontMatter("entry 100"), null, null,
+						new Author("admin", OffsetDateTime.now())),
+				new Entry(200L, new FrontMatter("entry 200"), null, null,
+						new Author("admin", OffsetDateTime.now())),
+				new Entry(300L, new FrontMatter("entry 300"), null, null,
+						new Author("admin", OffsetDateTime.now())),
+				new Entry(400L, new FrontMatter("entry 400"), null, null,
+						new Author("admin", OffsetDateTime.now())))));
 		this.webTestClient.get().uri("http://localhost:{port}/notes", this.port)
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
 				.exchange().expectStatus().isOk().expectBody().jsonPath("$.length()")

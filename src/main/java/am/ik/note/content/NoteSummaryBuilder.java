@@ -1,5 +1,7 @@
 package am.ik.note.content;
 
+import java.time.OffsetDateTime;
+
 public class NoteSummaryBuilder {
 	private NoteId noteId;
 
@@ -10,6 +12,8 @@ public class NoteSummaryBuilder {
 	private String noteUrl;
 
 	private boolean subscribed;
+
+	private OffsetDateTime updatedDate;
 
 	public NoteSummaryBuilder withNoteId(NoteId noteId) {
 		this.noteId = noteId;
@@ -36,12 +40,17 @@ public class NoteSummaryBuilder {
 		return this;
 	}
 
+	public NoteSummaryBuilder withUpdatedDate(OffsetDateTime updatedDate) {
+		this.updatedDate = updatedDate;
+		return this;
+	}
+
 	public Long getEntryId() {
 		return entryId;
 	}
 
 	public NoteSummary build() {
 		return new NoteSummary(this.noteId, this.entryId, this.title, this.noteUrl,
-				this.subscribed);
+				this.subscribed, this.updatedDate);
 	}
 }

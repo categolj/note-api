@@ -3,6 +3,7 @@ package am.ik.note.content;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import am.ik.note.entry.Entry;
 import am.ik.note.entry.EntryClient;
@@ -34,11 +35,13 @@ public class NoteService {
 		if (summaries.isEmpty()) {
 			return List.of();
 		}
-		final Map<Long, String> entryMap = this.entryClient.getEntries().content()
-				.stream()
-				.collect(toUnmodifiableMap(Entry::entryId, e -> e.frontMatter().title()));
-		return summaries.stream()
-				.map(b -> b.withTitle(entryMap.get(b.getEntryId())).build()).toList();
+		final Map<Long, Entry> entryMap = this.entryClient.getEntries().content().stream()
+				.collect(toUnmodifiableMap(Entry::entryId, Function.identity()));
+		return summaries.stream().map(b -> {
+			final Entry entry = entryMap.get(b.getEntryId());
+			return b.withTitle(entry.frontMatter().title())
+					.withUpdatedDate(entry.updated().date()).build();
+		}).toList();
 	}
 
 	@Transactional(readOnly = true)

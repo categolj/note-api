@@ -50,9 +50,11 @@ class NoteServiceTest {
 						.withNoteUrl("https://example.com/note1").withSubscribed(true),
 				new NoteSummaryBuilder().withNoteId(noteId2).withEntryId(102L)
 						.withNoteUrl("https://example.com/note2").withSubscribed(false)));
-		given(this.entryClient.getEntries()).willReturn(new Entries(
-				List.of(new Entry(101L, new FrontMatter("title1"), null, null, null),
-						new Entry(102L, new FrontMatter("title2"), null, null, null))));
+		given(this.entryClient.getEntries()).willReturn(new Entries(List.of(
+				new Entry(101L, new FrontMatter("title1"), null, null,
+						new Author("admin", OffsetDateTime.now())),
+				new Entry(102L, new FrontMatter("title2"), null, null,
+						new Author("admin", OffsetDateTime.now())))));
 		final List<NoteSummary> summaries = this.noteService.findAll(readerId);
 
 		assertThat(summaries.stream().map(NoteSummary::title)).containsExactly("title1",
