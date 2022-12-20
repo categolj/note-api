@@ -39,6 +39,9 @@ public class NoteService {
 				.collect(toUnmodifiableMap(Entry::entryId, Function.identity()));
 		return summaries.stream().map(b -> {
 			final Entry entry = entryMap.get(b.getEntryId());
+			if (entry == null) {
+				return b.build();
+			}
 			return b.withTitle(entry.frontMatter().title())
 					.withUpdatedDate(entry.updated().date()).build();
 		}).toList();
