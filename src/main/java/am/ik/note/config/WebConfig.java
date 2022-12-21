@@ -1,6 +1,7 @@
 package am.ik.note.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -11,6 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**").allowedOrigins("*")
 				.allowedMethods("GET", "POST", "OPTIONS").allowedHeaders("*")
+				.exposedHeaders(HttpHeaders.WWW_AUTHENTICATE)
 				.maxAge(3600);
 	}
 }
