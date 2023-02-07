@@ -64,7 +64,7 @@ public class TokenController {
 					? ((ReaderUserDetails) userDetails).getReader().readerId().toString()
 					: userDetails.getUsername();
 			final Instant issuedAt = Instant.now(this.clock);
-			final Instant expiresAt = issuedAt.plus(3, ChronoUnit.HOURS);
+			final Instant expiresAt = issuedAt.plus(12, ChronoUnit.HOURS);
 			final Set<String> scope = userDetails.getAuthorities().stream()
 					.map(GrantedAuthority::getAuthority)
 					.collect(toCollection(TreeSet::new));
