@@ -43,7 +43,7 @@ class TokenControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.access_token").isNotEmpty())
 				.andExpect(jsonPath("$.token_type").value("Bearer"))
-				.andExpect(jsonPath("$.expires_in").value(10800))
+				.andExpect(jsonPath("$.expires_in").value(43200))
 				.andExpect(jsonPath("$.scope.length()").value(2))
 				.andExpect(jsonPath("$.scope[0]").value("note:read"))
 				.andExpect(jsonPath("$.scope[1]").value("openid"));
@@ -62,7 +62,7 @@ class TokenControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.access_token").isNotEmpty())
 				.andExpect(jsonPath("$.token_type").value("Bearer"))
-				.andExpect(jsonPath("$.expires_in").value(10800))
+				.andExpect(jsonPath("$.expires_in").value(43200))
 				.andExpect(jsonPath("$.scope.length()").value(2))
 				.andExpect(jsonPath("$.scope[0]").value("note:read"))
 				.andExpect(jsonPath("$.scope[1]").value("openid"));
