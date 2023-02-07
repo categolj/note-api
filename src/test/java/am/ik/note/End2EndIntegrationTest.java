@@ -143,7 +143,7 @@ public class End2EndIntegrationTest {
 				.bodyValue(new LinkedMultiValueMap<>(Map.of("username",
 						List.of("test@example.com"), "password", List.of("mypassword"))))
 				.exchange().expectStatus().isOk().expectBody().jsonPath("$.expires_in")
-				.isEqualTo(10800).jsonPath("$.token_type").isEqualTo("Bearer")
+				.isEqualTo(43200).jsonPath("$.token_type").isEqualTo("Bearer")
 				.jsonPath("$.access_token").isNotEmpty().returnResult();
 		final JsonNode tokenNode = this.objectMapper
 				.readValue(tokenResult.getResponseBody(), JsonNode.class);
@@ -312,7 +312,7 @@ public class End2EndIntegrationTest {
 				.bodyValue(new LinkedMultiValueMap<>(Map.of("username",
 						List.of("test@example.com"), "password", List.of("foobar"))))
 				.exchange().expectStatus().isOk().expectBody().jsonPath("$.expires_in")
-				.isEqualTo(10800).jsonPath("$.token_type").isEqualTo("Bearer")
+				.isEqualTo(43200).jsonPath("$.token_type").isEqualTo("Bearer")
 				.jsonPath("$.access_token").isNotEmpty().returnResult();
 		final JsonNode tokenNode = this.objectMapper
 				.readValue(tokenResult.getResponseBody(), JsonNode.class);
