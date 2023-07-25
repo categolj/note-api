@@ -13,14 +13,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @Import({ ActivationLinkMapper.class, ReaderMapper.class })
+@Testcontainers(disabledWithoutDocker = true)
 class ActivationLinkMapperTest {
+	@Container
+	@ServiceConnection
+	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+			"postgres:14-alpine");
 
 	@Autowired
 	ActivationLinkMapper activationLinkMapper;

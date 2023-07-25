@@ -54,12 +54,15 @@ public class SecurityConfig {
 	@Bean
 	public AccessLogger accessLogger() {
 		final UriFilter uriFilter = new UriFilter();
-		return new AccessLogger(httpExchange -> uriFilter.test(httpExchange.getRequest().getUri().getPath()));
+		return new AccessLogger(httpExchange -> uriFilter
+				.test(httpExchange.getRequest().getUri().getPath()));
 	}
 
 	@Bean
 	@Order(2)
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, HttpExchangeRepository repository, HttpExchangesProperties properties) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http,
+			HttpExchangeRepository repository, HttpExchangesProperties properties)
+			throws Exception {
 		return http.authorizeHttpRequests(auth -> auth.requestMatchers(OPTIONS)
 				.permitAll().requestMatchers("/info").permitAll()
 				.requestMatchers("/oauth/token").permitAll()
@@ -77,7 +80,9 @@ public class SecurityConfig {
 				.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
 				.cors(Customizer.withDefaults())
 				.sessionManagement(c -> c.sessionCreationPolicy(STATELESS))
-				.addFilterAfter(new HttpExchangesFilter(repository, properties.getRecording().getInclude()),
+				.addFilterAfter(
+						new HttpExchangesFilter(repository,
+								properties.getRecording().getInclude()),
 						SecurityContextHolderAwareRequestFilter.class)
 				.build();
 	}

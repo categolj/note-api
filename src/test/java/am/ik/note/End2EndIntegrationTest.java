@@ -24,13 +24,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.ArgumentMatchers;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +36,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
@@ -48,13 +45,21 @@ import org.springframework.http.client.reactive.JdkClientHttpConnector;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.LinkedMultiValueMap;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.mockito.BDDMockito.given;
 
-@TestMethodOrder(OrderAnnotation.class)
-@TestInstance(Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = "logging.level.web=INFO")
+@Testcontainers(disabledWithoutDocker = true)
+@TestMethodOrder(OrderAnnotation.class)
 public class End2EndIntegrationTest {
+	@Container
+	@ServiceConnection
+	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+			"postgres:14-alpine");
+
 	@LocalServerPort
 	int port;
 
@@ -87,7 +92,7 @@ public class End2EndIntegrationTest {
 
 	WebTestClient webTestClient;
 
-	String accessToken;
+	static String accessToken;
 
 	public End2EndIntegrationTest() {
 		this.webTestClient = WebTestClient.bindToServer(new JdkClientHttpConnector())
@@ -147,7 +152,7 @@ public class End2EndIntegrationTest {
 				.jsonPath("$.access_token").isNotEmpty().returnResult();
 		final JsonNode tokenNode = this.objectMapper
 				.readValue(tokenResult.getResponseBody(), JsonNode.class);
-		this.accessToken = tokenNode.get("access_token").asText();
+		accessToken = tokenNode.get("access_token").asText();
 	}
 
 	@Test
@@ -163,20 +168,20 @@ public class End2EndIntegrationTest {
 				new Entry(400L, new FrontMatter("entry 400"), null, null,
 						new Author("admin", OffsetDateTime.now())))));
 		this.webTestClient.get().uri("http://localhost:{port}/notes", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.length()")
-				.isEqualTo(4).jsonPath("$[0].entryId").isEqualTo(100)
-				.jsonPath("$[0].title").isEqualTo("entry 100").jsonPath("$[0].noteUrl")
-				.isNotEmpty().jsonPath("$[0].subscribed").isEqualTo(true)
-				.jsonPath("$[1].entryId").isEqualTo(200).jsonPath("$[1].title")
-				.isEqualTo("entry 200").jsonPath("$[1].noteUrl").isNotEmpty()
-				.jsonPath("$[1].subscribed").isEqualTo(true).jsonPath("$[2].entryId")
-				.isEqualTo(300).jsonPath("$[2].title").isEqualTo("entry 300")
-				.jsonPath("$[2].noteUrl").isEqualTo("https://example.com/300")
-				.jsonPath("$[2].subscribed").isEqualTo(false).jsonPath("$[3].entryId")
-				.isEqualTo(400).jsonPath("$[3].title").isEqualTo("entry 400")
-				.jsonPath("$[3].noteUrl").isEqualTo("https://example.com/400")
-				.jsonPath("$[3].subscribed").isEqualTo(false);
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
+				.expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(4)
+				.jsonPath("$[0].entryId").isEqualTo(100).jsonPath("$[0].title")
+				.isEqualTo("entry 100").jsonPath("$[0].noteUrl").isNotEmpty()
+				.jsonPath("$[0].subscribed").isEqualTo(true).jsonPath("$[1].entryId")
+				.isEqualTo(200).jsonPath("$[1].title").isEqualTo("entry 200")
+				.jsonPath("$[1].noteUrl").isNotEmpty().jsonPath("$[1].subscribed")
+				.isEqualTo(true).jsonPath("$[2].entryId").isEqualTo(300)
+				.jsonPath("$[2].title").isEqualTo("entry 300").jsonPath("$[2].noteUrl")
+				.isEqualTo("https://example.com/300").jsonPath("$[2].subscribed")
+				.isEqualTo(false).jsonPath("$[3].entryId").isEqualTo(400)
+				.jsonPath("$[3].title").isEqualTo("entry 400").jsonPath("$[3].noteUrl")
+				.isEqualTo("https://example.com/400").jsonPath("$[3].subscribed")
+				.isEqualTo(false);
 	}
 
 	@Test
@@ -190,28 +195,26 @@ public class End2EndIntegrationTest {
 						.willReturn(entry));
 
 		this.webTestClient.get().uri("http://localhost:{port}/notes/100", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.entryId")
-				.isEqualTo(100).jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId")
-				.doesNotExist().jsonPath("$.frontMatter.title").isEqualTo("entry 100");
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
+				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(100)
+				.jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId").doesNotExist()
+				.jsonPath("$.frontMatter.title").isEqualTo("entry 100");
 
 		this.webTestClient.get().uri("http://localhost:{port}/notes/200", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.entryId")
-				.isEqualTo(200).jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId")
-				.doesNotExist().jsonPath("$.frontMatter.title").isEqualTo("entry 200");
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
+				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(200)
+				.jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId").doesNotExist()
+				.jsonPath("$.frontMatter.title").isEqualTo("entry 200");
 
 		this.webTestClient.get().uri("http://localhost:{port}/notes/300", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
-				.exchange().expectStatus().isForbidden().expectBody()
-				.jsonPath("$.message")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
+				.expectStatus().isForbidden().expectBody().jsonPath("$.message")
 				.isEqualTo("You are not allowed to access to the entry.")
 				.jsonPath("$.noteUrl").isEqualTo("https://example.com/300");
 
 		this.webTestClient.get().uri("http://localhost:{port}/notes/400", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
-				.exchange().expectStatus().isForbidden().expectBody()
-				.jsonPath("$.message")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
+				.expectStatus().isForbidden().expectBody().jsonPath("$.message")
 				.isEqualTo("You are not allowed to access to the entry.")
 				.jsonPath("$.noteUrl").isEqualTo("https://example.com/400");
 	}
@@ -221,13 +224,13 @@ public class End2EndIntegrationTest {
 	void subscribe() {
 		this.webTestClient.post().uri(
 				"http://localhost:{port}/notes/25773727-3af7-463d-b144-db089f4963d7/subscribe",
-				this.port).header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
+				this.port).header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
 				.exchange().expectStatus().isOk().expectBody().jsonPath("$.entryId")
 				.isEqualTo(400).jsonPath("$.subscribed").isEqualTo(false);
 
 		this.webTestClient.post().uri(
 				"http://localhost:{port}/notes/25773727-3af7-463d-b144-db089f4963d7/subscribe",
-				this.port).header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
+				this.port).header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
 				.exchange().expectStatus().isOk().expectBody().jsonPath("$.entryId")
 				.isEqualTo(400).jsonPath("$.subscribed").isEqualTo(true);
 	}
@@ -243,28 +246,27 @@ public class End2EndIntegrationTest {
 						.willReturn(entry));
 
 		this.webTestClient.get().uri("http://localhost:{port}/notes/100", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.entryId")
-				.isEqualTo(100).jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId")
-				.doesNotExist().jsonPath("$.frontMatter.title").isEqualTo("entry 100");
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
+				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(100)
+				.jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId").doesNotExist()
+				.jsonPath("$.frontMatter.title").isEqualTo("entry 100");
 
 		this.webTestClient.get().uri("http://localhost:{port}/notes/200", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.entryId")
-				.isEqualTo(200).jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId")
-				.doesNotExist().jsonPath("$.frontMatter.title").isEqualTo("entry 200");
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
+				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(200)
+				.jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId").doesNotExist()
+				.jsonPath("$.frontMatter.title").isEqualTo("entry 200");
 
 		this.webTestClient.get().uri("http://localhost:{port}/notes/300", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
-				.exchange().expectStatus().isForbidden().expectBody()
-				.jsonPath("$.message")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
+				.expectStatus().isForbidden().expectBody().jsonPath("$.message")
 				.isEqualTo("You are not allowed to access to the entry.")
 				.jsonPath("$.noteUrl").isEqualTo("https://example.com/300");
 
 		this.webTestClient.get().uri("http://localhost:{port}/notes/400", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + this.accessToken)
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.entryId")
-				.isEqualTo(400).jsonPath("$.noteUrl").isEqualTo("https://example.com/400")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
+				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(400)
+				.jsonPath("$.noteUrl").isEqualTo("https://example.com/400")
 				.jsonPath("$.noteId").doesNotExist().jsonPath("$.frontMatter.title")
 				.isEqualTo("entry 400");
 	}
@@ -304,7 +306,7 @@ public class End2EndIntegrationTest {
 	}
 
 	@Test
-	@Order(9)
+	@Order(10)
 	void issueTokenWithNewPassword() throws Exception {
 		final EntityExchangeResult<byte[]> tokenResult = this.webTestClient.post()
 				.uri("http://localhost:{port}/oauth/token", this.port)
@@ -316,10 +318,11 @@ public class End2EndIntegrationTest {
 				.jsonPath("$.access_token").isNotEmpty().returnResult();
 		final JsonNode tokenNode = this.objectMapper
 				.readValue(tokenResult.getResponseBody(), JsonNode.class);
-		this.accessToken = tokenNode.get("access_token").asText();
+		accessToken = tokenNode.get("access_token").asText();
+		this.cleanUp();
 	}
 
-	@AfterAll
+	// @AfterEach
 	void cleanUp() {
 		this.noteMapper.deleteByEntryId(300L);
 		this.noteMapper.deleteByEntryId(400L);

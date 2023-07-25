@@ -83,6 +83,6 @@ class PasswordResetServiceTest {
 						.parse("2022-12-06T06:38:31.343307Z").minus(3L, ChronoUnit.DAYS));
 		assertThatThrownBy(
 				() -> this.passwordResetService.reset(passwordReset, "newPassword"))
-						.isInstanceOf(PasswordResetExpiredException.class);
+				.isInstanceOf(PasswordResetExpiredException.class);
 	}
 }

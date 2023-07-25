@@ -25,10 +25,10 @@ public class SendGridPasswordResetSender implements PasswordResetSender {
 			final String link = String.format("https://ik.am/note/password_reset/%s",
 					passwordReset.resetId());
 			final String content = "こんにちは@makingです。\n\n" + //
-			"次のURLをクリックしてパスワードリセットを行って下さい。\n\n" + //
-			link + "\n\n" + //
-			"リンクは" + passwordReset.expiry() + "まで有効です。\n\n" + //
-			"お手数おかけしますが、よろしくお願いします。";
+					"次のURLをクリックしてパスワードリセットを行って下さい。\n\n" + //
+					link + "\n\n" + //
+					"リンクは" + passwordReset.expiry() + "まで有効です。\n\n" + //
+					"お手数おかけしますが、よろしくお願いします。";
 			this.sendGridSender.sendMail(to, subject, content);
 		});
 	}
@@ -39,8 +39,8 @@ public class SendGridPasswordResetSender implements PasswordResetSender {
 			final String to = reader.email();
 			final String subject = "【はじめるSpring Boot 3】パスワードリセット完了通知";
 			final String content = "こんにちは@makingです。\n\n" + //
-			"パスワードがリセットされました。次のURLからログインして下さい。\n\n" + //
-			"https://ik.am/note/login";
+					"パスワードがリセットされました。次のURLからログインして下さい。\n\n" + //
+					"https://ik.am/note/login";
 			this.sendGridSender.sendMail(to, subject, content);
 		});
 	}
