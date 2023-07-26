@@ -1,34 +1,40 @@
 package am.ik.note.content;
 
 import am.ik.note.reader.ReaderId;
-
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class NoteReaderMapper {
-	private final JdbcTemplate jdbcTemplate;
+	private final JdbcClient jdbcClient;
 
 	public NoteReaderMapper(JdbcTemplate jdbcTemplate) {
-		this.jdbcTemplate = jdbcTemplate;
+		this.jdbcClient = JdbcClient.create(jdbcTemplate);
 	}
 
 	public int countByNoteIdAndReaderId(NoteId noteId, ReaderId readerId) {
-		final Integer count = this.jdbcTemplate.queryForObject("""
+		final Integer count = this.jdbcClient.sql("""
 				SELECT COUNT(*)
 				FROM note_reader AS nr
 				WHERE nr.note_id = ?
 				  AND nr.reader_id = ?
-				""", Integer.class, noteId.toString(), readerId.toString());
+				""").param(noteId.toString()) //
+				.param(readerId.toString()) //
+				.query() //
+				.singleValue(Integer.class);
 		return count == null ? -1 : count;
 	}
 
 	@Transactional
 	public int insertNoteReader(NoteId noteId, ReaderId readerId) {
-		return this.jdbcTemplate.update("""
+		return this.jdbcClient.sql("""
 				INSERT INTO note_reader(note_id, reader_id) VALUES (?, ?)
-				""", noteId.toString(), readerId.toString());
+				""") //
+				.param(noteId.toString()) //
+				.param(readerId.toString()) //
+				.update();
 	}
 
 }

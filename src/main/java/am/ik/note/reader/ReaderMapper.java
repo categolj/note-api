@@ -1,8 +1,8 @@
 package am.ik.note.reader;
 
-import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public class ReaderMapper {
-	private final JdbcTemplate jdbcTemplate;
+	private final JdbcClient jdbcClient;
 
 	private final RowMapper<Reader> readerRowMapper = (rs, i) -> {
 		final String email = rs.getString("email");
@@ -23,57 +23,71 @@ public class ReaderMapper {
 	};
 
 	public ReaderMapper(JdbcTemplate jdbcTemplate) {
-		this.jdbcTemplate = jdbcTemplate;
+		this.jdbcClient = JdbcClient.create(jdbcTemplate);
 	}
 
 	public Optional<Reader> findById(ReaderId readerId) {
-		return DataAccessUtils.optionalResult(this.jdbcTemplate.query(
-				"""
+		return this.jdbcClient
+				.sql("""
 						SELECT r.reader_id, r.email, rp.hashed_password, r.reader_state, r.created_at
 						FROM reader AS r
 							LEFT JOIN reader_password rp on r.reader_id = rp.reader_id
 						WHERE r.reader_id = ?
-						""",
-				this.readerRowMapper, readerId.toString()));
+						""") //
+				.param(readerId.toString()) //
+				.query(this.readerRowMapper) //
+				.optional();
 	}
 
 	public Optional<Reader> findByEmail(String email) {
-		return DataAccessUtils.optionalResult(this.jdbcTemplate.query(
-				"""
+		return this.jdbcClient
+				.sql("""
 						SELECT r.reader_id, r.email, rp.hashed_password, r.reader_state, r.created_at
 						FROM reader AS r
 							LEFT JOIN reader_password rp on r.reader_id = rp.reader_id
 						WHERE r.email = ?
-						""",
-				this.readerRowMapper, email));
+						""") //
+				.param(email) //
+				.query(this.readerRowMapper) //
+				.optional();
 	}
 
 	public List<Reader> findAll() {
-		return this.jdbcTemplate.query("""
+		return this.jdbcClient.sql("""
 				SELECT reader_id, email, '' AS hashed_password, reader_state, created_at
 				FROM reader
 				ORDER BY created_at DESC
-				""", this.readerRowMapper);
+				""") //
+				.query(this.readerRowMapper) //
+				.list();
 	}
 
 	@Transactional
 	public int insert(ReaderId readerId, String email) {
-		return this.jdbcTemplate.update("""
+		return this.jdbcClient.sql("""
 				INSERT INTO reader(reader_id, email) VALUES(?, ?)
-				""", readerId.toString(), email);
+				""") //
+				.param(readerId.toString()) //
+				.param(email) //
+				.update();
 	}
 
 	@Transactional
 	public int updateReaderState(ReaderId readerId, ReaderState readerState) {
-		return this.jdbcTemplate.update("""
+		return this.jdbcClient.sql("""
 				UPDATE reader SET reader_state = ? WHERE reader_id = ?
-				""", readerState.name(), readerId.toString());
+				""") //
+				.param(readerState.name()) //
+				.param(readerId.toString()) //
+				.update();
 	}
 
 	@Transactional
 	public int deleteByEmail(String email) {
-		return this.jdbcTemplate.update("""
+		return this.jdbcClient.sql("""
 				DELETE FROM reader WHERE email = ?
-				""", email);
+				""") //
+				.param(email) //
+				.update();
 	}
 }
