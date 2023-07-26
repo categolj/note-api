@@ -1,14 +1,13 @@
 package am.ik.note.reader;
 
-import java.util.List;
-import java.util.Optional;
-
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import static am.ik.note.utils.JdbcTemplateWrapper.wrapQuery;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ReaderMapper {
@@ -28,7 +27,7 @@ public class ReaderMapper {
 	}
 
 	public Optional<Reader> findById(ReaderId readerId) {
-		return wrapQuery(() -> this.jdbcTemplate.queryForObject(
+		return DataAccessUtils.optionalResult(this.jdbcTemplate.query(
 				"""
 						SELECT r.reader_id, r.email, rp.hashed_password, r.reader_state, r.created_at
 						FROM reader AS r
@@ -39,7 +38,7 @@ public class ReaderMapper {
 	}
 
 	public Optional<Reader> findByEmail(String email) {
-		return wrapQuery(() -> this.jdbcTemplate.queryForObject(
+		return DataAccessUtils.optionalResult(this.jdbcTemplate.query(
 				"""
 						SELECT r.reader_id, r.email, rp.hashed_password, r.reader_state, r.created_at
 						FROM reader AS r

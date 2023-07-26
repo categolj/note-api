@@ -1,16 +1,14 @@
 package am.ik.note.content;
 
-import java.util.List;
-import java.util.Optional;
-
 import am.ik.note.reader.ReaderId;
-
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import static am.ik.note.utils.JdbcTemplateWrapper.wrapQuery;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class NoteMapper {
@@ -28,7 +26,7 @@ public class NoteMapper {
 	}
 
 	public Optional<Note> findByNoteId(NoteId noteId) {
-		return wrapQuery(() -> this.jdbcTemplate.queryForObject("""
+		return DataAccessUtils.optionalResult(this.jdbcTemplate.query("""
 				SELECT n.note_id, n.entry_id, n.note_url
 				FROM note AS n
 				WHERE n.note_id = ?
@@ -36,7 +34,7 @@ public class NoteMapper {
 	}
 
 	public Optional<Note> findByEntryId(Long entryId) {
-		return wrapQuery(() -> this.jdbcTemplate.queryForObject("""
+		return DataAccessUtils.optionalResult(this.jdbcTemplate.query("""
 				SELECT n.note_id, n.entry_id, n.note_url
 				FROM note AS n
 				WHERE n.entry_id = ?

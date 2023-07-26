@@ -6,12 +6,11 @@ import java.util.Optional;
 
 import am.ik.note.reader.ReaderId;
 
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
-import static am.ik.note.utils.JdbcTemplateWrapper.wrapQuery;
 
 @Repository
 public class ActivationLinkMapper {
@@ -31,7 +30,7 @@ public class ActivationLinkMapper {
 	}
 
 	public Optional<ActivationLink> findById(ActivationLinkId activationLinkId) {
-		return wrapQuery(() -> this.jdbcTemplate.queryForObject(
+		return DataAccessUtils.optionalResult(this.jdbcTemplate.query(
 				"""
 						SELECT activation_id, reader_id, created_at FROM activation_link WHERE activation_id = ?
 						""",

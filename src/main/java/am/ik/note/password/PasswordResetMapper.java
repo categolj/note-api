@@ -4,8 +4,8 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 
 import am.ik.note.reader.ReaderId;
-import am.ik.note.utils.JdbcTemplateWrapper;
 
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +19,8 @@ public class PasswordResetMapper {
 	}
 
 	public Optional<PasswordReset> findByResetId(PasswordResetId resetId) {
-		return JdbcTemplateWrapper
-				.wrapQuery(() -> this.jdbcTemplate.queryForObject(
+		return DataAccessUtils
+				.optionalResult(this.jdbcTemplate.query(
 						"""
 								SELECT reset_id, reader_id, created_at
 								FROM password_reset
