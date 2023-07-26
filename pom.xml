@@ -77,6 +77,11 @@
 			<artifactId>sendgrid-java</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>am.ik.spring</groupId>
+			<artifactId>retryable-client-http-request-interceptor</artifactId>
+			<version>0.2.2</version>
+		</dependency>
+		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 			<scope>runtime</scope>
