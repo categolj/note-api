@@ -6,9 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
+import java.net.SocketTimeoutException;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -270,6 +273,18 @@ class EntryClientTest {
 	}
 
 	@Test
+	void getEntryRetryTimeoutWithSuccess() {
+		this.server.expect(ExpectedCount.times(4), requestTo("/entries/751"))
+				.andRespond(withException(new SocketTimeoutException("timeout")));
+		this.server.expect(requestTo("/entries/751")).andRespond(withSuccess("""
+				{"entryId": 751}
+				""", MediaType.APPLICATION_JSON));
+		Entry entry = this.entryClient.getEntry(751L);
+		assertThat(entry).isNotNull();
+		assertThat(entry.entryId()).isEqualTo(751L);
+	}
+
+	@Test
 	void getEntryRetryWithFailure() {
 		this.server.expect(requestTo("/entries/751")).andRespond(withServerError());
 		this.server.expect(requestTo("/entries/751")).andRespond(withBadGateway());
@@ -285,6 +300,19 @@ class EntryClientTest {
 			this.entryClient.getEntry(751L);
 		}).isInstanceOf(HttpClientErrorException.class)
 				.hasMessage("429 Too Many Requests: \"rate limit exceeded!\"");
+	}
+
+	@Test
+	void getEntryRetryTimeoutWithFailure() {
+		this.server.expect(ExpectedCount.times(5), requestTo("/entries/751"))
+				.andRespond(withException(new SocketTimeoutException("timeout")));
+		this.server.expect(requestTo("/entries/751")).andRespond(withSuccess("""
+				{"entryId": 751}
+				""", MediaType.APPLICATION_JSON));
+		assertThatThrownBy(() -> {
+			this.entryClient.getEntry(751L);
+		}).isInstanceOf(ResourceAccessException.class)
+				.hasMessage("I/O error on GET request for \"/entries/751\": timeout");
 	}
 
 	@Test
