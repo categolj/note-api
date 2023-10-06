@@ -15,7 +15,7 @@ public class NoteReaderMapper {
 	}
 
 	public int countByNoteIdAndReaderId(NoteId noteId, ReaderId readerId) {
-		final Integer count = this.jdbcClient.sql("""
+		final Long count = this.jdbcClient.sql("""
 				SELECT COUNT(*)
 				FROM note_reader AS nr
 				WHERE nr.note_id = ?
@@ -23,8 +23,8 @@ public class NoteReaderMapper {
 				""").param(noteId.toString()) //
 				.param(readerId.toString()) //
 				.query() //
-				.singleValue(Integer.class);
-		return count == null ? -1 : count;
+				.singleValue();
+		return count.intValue();
 	}
 
 	@Transactional
