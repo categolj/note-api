@@ -15,7 +15,7 @@
 	<name>note-api</name>
 	<description>note-api</description>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
 		<ecs-logging-java.version>1.5.0</ecs-logging-java.version>
 	</properties>
 	<dependencies>
