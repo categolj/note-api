@@ -23,7 +23,7 @@ public class NoteReaderMapper {
 				""").param(noteId.toString()) //
 				.param(readerId.toString()) //
 				.query() //
-				.singleValue();
+				.single();
 		return count.intValue();
 	}
 
