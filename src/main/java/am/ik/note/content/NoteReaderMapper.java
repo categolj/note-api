@@ -16,13 +16,13 @@ public class NoteReaderMapper {
 
 	public int countByNoteIdAndReaderId(NoteId noteId, ReaderId readerId) {
 		final Long count = this.jdbcClient.sql("""
-				SELECT COUNT(*)
+				SELECT COUNT(*) AS count
 				FROM note_reader AS nr
 				WHERE nr.note_id = ?
 				  AND nr.reader_id = ?
 				""").param(noteId.toString()) //
 				.param(readerId.toString()) //
-				.query() //
+				.query((rs, rowNum) -> rs.getLong("count")) //
 				.single();
 		return count.intValue();
 	}
