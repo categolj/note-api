@@ -22,7 +22,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 @RestClientTest(properties = { "logging.level.web=DEBUG",
 		"logging.level.am.ik.spring.http.client.RetryableClientHttpRequestInterceptor=DEBUG",
-		"entry.retry-interval=5ms", "entry.retry-max-elapsed-time=40ms" })
+		"entry.retry-interval=5ms", "entry.retry-max-elapsed-time=40ms",
+		"entry.api-url=https://example.com" })
 @Import(EntryClientConfig.class)
 class EntryClientTest {
 	@Autowired
@@ -311,8 +312,8 @@ class EntryClientTest {
 				""", MediaType.APPLICATION_JSON));
 		assertThatThrownBy(() -> {
 			this.entryClient.getEntry(751L);
-		}).isInstanceOf(ResourceAccessException.class)
-				.hasMessage("I/O error on GET request for \"/entries/751\": timeout");
+		}).isInstanceOf(ResourceAccessException.class).hasMessage(
+				"I/O error on GET request for \"https://example.com/entries/751\": timeout");
 	}
 
 	@Test

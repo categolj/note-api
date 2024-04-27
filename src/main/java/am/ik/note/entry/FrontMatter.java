@@ -1,4 +1,6 @@
 package am.ik.note.entry;
 
-public record FrontMatter(String title) {
+import org.springframework.lang.NonNull;
+
+public record FrontMatter(@NonNull String title) {
 }

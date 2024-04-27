@@ -2,5 +2,7 @@ package am.ik.note.entry;
 
 import java.util.List;
 
-public record Entries(List<Entry> content) {
+import org.springframework.lang.NonNull;
+
+public record Entries(@NonNull List<Entry> content) {
 }

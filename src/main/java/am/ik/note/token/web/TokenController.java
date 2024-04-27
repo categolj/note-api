@@ -5,16 +5,21 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import am.ik.note.reader.ReaderUserDetails;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -51,6 +56,9 @@ public class TokenController {
 	}
 
 	@PostMapping(path = "oauth/token")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = OAuth2Token.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = OAuth2Error.class))) })
 	public ResponseEntity<?> token(@RequestParam("username") String username,
 			@RequestParam("password") String password, UriComponentsBuilder builder) {
 		final Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -73,15 +81,27 @@ public class TokenController {
 					.audience(List.of("note.ik.am")).claim("scope", scope)
 					.claim("preferred_username", userDetails.getUsername()).build();
 			final Jwt jwt = this.jwtEncoder.encode(JwtEncoderParameters.from(claims));
-			return ResponseEntity.ok(Map.of("access_token", jwt.getTokenValue(),
-					"token_type", TokenType.BEARER.getValue(), "expires_in",
-					Duration.between(issuedAt, expiresAt).getSeconds(), "scope", scope));
+			return ResponseEntity
+					.ok(new OAuth2Token(jwt.getTokenValue(), TokenType.BEARER.getValue(),
+							Duration.between(issuedAt, expiresAt).getSeconds(), scope));
 		}
 		catch (AuthenticationException e) {
 			log.warn("Authentication failed username:{} message:{}", username,
 					e.getMessage());
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-					Map.of("error", "unauthorized", "error_description", e.getMessage()));
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(new OAuth2Error("unauthorized", e.getMessage()));
 		}
+	}
+
+	public record OAuth2Token(@NonNull @JsonProperty("access_token") String accessToken,
+			@NonNull @JsonProperty("token_type") String tokenType,
+			@NonNull @JsonProperty("expires_in") long expiresIn,
+			@NonNull Set<String> scope) {
+
+	}
+
+	public record OAuth2Error(@NonNull String error,
+			@NonNull @JsonProperty("error_description") String errorDescription) {
+
 	}
 }

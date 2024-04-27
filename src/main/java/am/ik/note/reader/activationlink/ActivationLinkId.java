@@ -5,7 +5,9 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record ActivationLinkId(@JsonProperty("activationLinkId") UUID value) {
+import org.springframework.lang.NonNull;
+
+public record ActivationLinkId(@NonNull @JsonProperty("activationLinkId") UUID value) {
 	public static ActivationLinkId random() {
 		return new ActivationLinkId(UUID.randomUUID());
 	}

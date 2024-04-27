@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 
+import am.ik.note.common.ResponseMessage;
 import am.ik.note.password.PasswordReset;
 import am.ik.note.password.PasswordResetExpiredException;
 import am.ik.note.password.PasswordResetId;
@@ -39,28 +40,28 @@ public class PasswordResetController {
 	}
 
 	@PostMapping(path = "/send_link")
-	public ResponseEntity<?> sendLink(@RequestBody SendLinkInput input) {
+	public ResponseEntity<ResponseMessage> sendLink(@RequestBody SendLinkInput input) {
 		final String email = input.email();
 		return ResponseEntity.of(this.readerMapper.findByEmail(email)
 				.map(reader -> new PasswordReset(
 						new PasswordResetId(idGenerator.generateId()), reader.readerId(),
 						OffsetDateTime.now()))
 				.map(this.passwordResetService::sendLink)
-				.map(count -> Map.of("message", "Sent a link.")));
+				.map(count -> new ResponseMessage("Sent a link.")));
 	}
 
 	@PostMapping(path = "")
-	public ResponseEntity<?> reset(@RequestBody PasswordResetInput input) {
+	public ResponseEntity<ResponseMessage> reset(@RequestBody PasswordResetInput input) {
 		try {
 			return ResponseEntity
 					.of(this.passwordResetMapper.findByResetId(input.toPasswordResetId())
 							.map(passwordReset -> this.passwordResetService
 									.reset(passwordReset, input.newPassword()))
-							.map(count -> Map.of("message", "Reset the password")));
+							.map(count -> new ResponseMessage("Reset the password")));
 		}
 		catch (PasswordResetExpiredException e) {
-			return ResponseEntity.badRequest()
-					.body(Map.of("message", "The given link has been already expired."));
+			return ResponseEntity.badRequest().body(
+					new ResponseMessage("The given link has been already expired."));
 		}
 	}
 

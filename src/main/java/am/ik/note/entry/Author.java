@@ -2,5 +2,7 @@ package am.ik.note.entry;
 
 import java.time.OffsetDateTime;
 
-public record Author(String name, OffsetDateTime date) {
+import org.springframework.lang.NonNull;
+
+public record Author(@NonNull String name, @NonNull OffsetDateTime date) {
 }

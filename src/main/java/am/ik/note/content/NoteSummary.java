@@ -4,10 +4,12 @@ import java.time.OffsetDateTime;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
-public record NoteSummary(@JsonUnwrapped NoteId noteId, Long entryId, String title,
-						  String noteUrl,
-						  boolean subscribed,
-						  OffsetDateTime updatedDate) {
+import org.springframework.lang.NonNull;
+
+public record NoteSummary(@JsonUnwrapped NoteId noteId, @NonNull Long entryId, @NonNull String title,
+						  @NonNull String noteUrl,
+						  @NonNull boolean subscribed,
+						  @NonNull OffsetDateTime updatedDate) {
 
 	public NoteSummary excludeNoteId() {
 		return new NoteSummary(null, this.entryId, this.title, this.noteUrl, this.subscribed, this.updatedDate);
