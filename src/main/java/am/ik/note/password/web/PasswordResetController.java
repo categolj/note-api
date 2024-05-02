@@ -11,6 +11,7 @@ import am.ik.note.password.PasswordResetId;
 import am.ik.note.password.PasswordResetMapper;
 import am.ik.note.password.PasswordResetService;
 import am.ik.note.reader.ReaderMapper;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.IdGenerator;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/password_reset")
+@Tag(name = "password-reset")
 public class PasswordResetController {
 	private final PasswordResetService passwordResetService;
 
