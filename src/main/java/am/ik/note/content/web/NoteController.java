@@ -57,7 +57,7 @@ public class NoteController {
 	@GetMapping(path = "/{entryId:[0-9]+}")
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = NoteDetails.class))),
-			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = ErrorResponse.class))) })
 	public ResponseEntity<?> getNoteByEntryId(@PathVariable("entryId") Long entryId,
 			@AuthenticationPrincipal Jwt jwt) {
 		try {
@@ -74,7 +74,7 @@ public class NoteController {
 	@GetMapping(path = "/{noteId:[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}}")
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = NoteDetails.class))),
-			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = ErrorResponse.class))) })
 	public ResponseEntity<?> getNoteByNoteId(@PathVariable("noteId") NoteId noteId,
 			@AuthenticationPrincipal Jwt jwt) {
 		try {
