@@ -14,10 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,7 +38,8 @@ class TokenControllerTest {
 				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
 						"{noop}password", ReaderState.ENABLED)));
 		this.mockMvc
-				.perform(MockMvcRequestBuilders.post("/oauth/token")
+				.perform(post("/oauth/token")
+						.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 						.param("username", "demo@example.com")
 						.param("password", "password"))
 				.andExpect(status().isOk())
@@ -56,7 +58,8 @@ class TokenControllerTest {
 				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
 						"{noop}password", ReaderState.ENABLED)));
 		this.mockMvc
-				.perform(MockMvcRequestBuilders.post("/oauth/token")
+				.perform(post("/oauth/token")
+						.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 						.param("username", readerId.toString())
 						.param("password", "password"))
 				.andExpect(status().isOk())
@@ -72,7 +75,8 @@ class TokenControllerTest {
 	void token_401_bad_username() throws Exception {
 		given(this.readerMapper.findByEmail("demo@example.com"))
 				.willReturn(Optional.empty());
-		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
+		this.mockMvc.perform(post("/oauth/token")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("username", "demo@example.com").param("password", "password"))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.error").value("unauthorized"))
@@ -85,7 +89,8 @@ class TokenControllerTest {
 		given(this.readerMapper.findByEmail("demo@example.com"))
 				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
 						"{noop}password", ReaderState.ENABLED)));
-		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
+		this.mockMvc.perform(post("/oauth/token")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("username", "demo@example.com").param("password", "badpassword"))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.error").value("unauthorized"))
@@ -98,7 +103,8 @@ class TokenControllerTest {
 		given(this.readerMapper.findByEmail("demo@example.com"))
 				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
 						"{noop}password", ReaderState.DISABLED)));
-		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
+		this.mockMvc.perform(post("/oauth/token")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("username", "demo@example.com").param("password", "password"))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.error").value("unauthorized"))
@@ -111,7 +117,8 @@ class TokenControllerTest {
 		given(this.readerMapper.findByEmail("demo@example.com"))
 				.willReturn(Optional.of(new Reader(readerId, "demo@example.com",
 						"{noop}password", ReaderState.LOCKED)));
-		this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
+		this.mockMvc.perform(post("/oauth/token")
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.param("username", "demo@example.com").param("password", "password"))
 				.andExpect(status().isUnauthorized())
 				.andExpect(jsonPath("$.error").value("unauthorized")).andExpect(

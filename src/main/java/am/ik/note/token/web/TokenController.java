@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,8 +33,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -57,14 +58,13 @@ public class TokenController {
 		this.clock = clock;
 	}
 
-	@PostMapping(path = "oauth/token")
+	@PostMapping(path = "oauth/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = OAuth2Token.class))),
 			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = OAuth2Error.class))) })
-	public ResponseEntity<?> token(@RequestParam("username") String username,
-			@RequestParam("password") String password, UriComponentsBuilder builder) {
+	public ResponseEntity<?> token(TokenInput input, UriComponentsBuilder builder) {
 		final Authentication authentication = new UsernamePasswordAuthenticationToken(
-				username, password);
+				input.username(), input.password());
 		try {
 			final Authentication authenticated = this.authenticationManager
 					.authenticate(authentication);
@@ -88,11 +88,14 @@ public class TokenController {
 							Duration.between(issuedAt, expiresAt).getSeconds(), scope));
 		}
 		catch (AuthenticationException e) {
-			log.warn("Authentication failed username:{} message:{}", username,
+			log.warn("Authentication failed username:{} message:{}", input.username(),
 					e.getMessage());
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(new OAuth2Error("unauthorized", e.getMessage()));
 		}
+	}
+
+	public record TokenInput(String username, String password) {
 	}
 
 	public record OAuth2Token(@NonNull @JsonProperty("access_token") String accessToken,
