@@ -5,9 +5,9 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
-public record NoteId(@NonNull @JsonProperty("noteId") UUID value) {
+public record NoteId(@Nullable @JsonProperty("noteId") UUID value) {
 	public static NoteId random() {
 		return new NoteId(UUID.randomUUID());
 	}
