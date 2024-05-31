@@ -17,7 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@JdbcTest(properties = "logging.level.sql=DEBUG")
+@JdbcTest(properties = "logging.level.sql=INFO")
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @Import({ ReaderMapper.class, ReaderPasswordMapper.class })
 @Testcontainers(disabledWithoutDocker = true)

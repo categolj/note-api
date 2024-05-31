@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
-@RestClientTest(properties = { "logging.level.web=DEBUG",
+@RestClientTest(properties = { "logging.level.web=INFO",
 		"logging.level.am.ik.spring.http.client.RetryableClientHttpRequestInterceptor=DEBUG",
 		"entry.retry-interval=5ms", "entry.retry-max-elapsed-time=40ms",
 		"entry.api-url=https://example.com" })
