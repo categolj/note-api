@@ -1,6 +1,7 @@
 package am.ik.note.config;
 
 import am.ik.accesslogger.AccessLogger;
+import am.ik.accesslogger.AccessLoggerBuilder;
 import am.ik.note.reader.ReaderMapper;
 import am.ik.note.reader.ReaderUserDetailsService;
 import com.nimbusds.jose.jwk.JWK;
@@ -54,8 +55,10 @@ public class SecurityConfig {
 	@Bean
 	public AccessLogger accessLogger() {
 		final UriFilter uriFilter = new UriFilter();
-		return new AccessLogger(httpExchange -> uriFilter
-				.test(httpExchange.getRequest().getUri().getPath()));
+		return AccessLoggerBuilder.accessLogger()
+				.filter(httpExchange -> uriFilter
+						.test(httpExchange.getRequest().getUri().getPath()))
+				.addKeyValues(true).build();
 	}
 
 	@Bean
