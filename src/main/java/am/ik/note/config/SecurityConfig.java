@@ -1,7 +1,5 @@
 package am.ik.note.config;
 
-import am.ik.accesslogger.AccessLogger;
-import am.ik.accesslogger.AccessLoggerBuilder;
 import am.ik.note.reader.ReaderMapper;
 import am.ik.note.reader.ReaderUserDetailsService;
 import com.nimbusds.jose.jwk.JWK;
@@ -11,8 +9,6 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 
-import org.springframework.boot.actuate.autoconfigure.web.exchanges.HttpExchangesProperties;
-import org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository;
 import org.springframework.boot.actuate.web.exchanges.servlet.HttpExchangesFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -44,7 +40,7 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties({ RsaKeyProperties.class, HttpExchangesProperties.class })
+@EnableConfigurationProperties({ RsaKeyProperties.class })
 public class SecurityConfig {
 	private final RsaKeyProperties rsaKeys;
 
@@ -53,19 +49,8 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public AccessLogger accessLogger() {
-		final UriFilter uriFilter = new UriFilter();
-		return AccessLoggerBuilder.accessLogger()
-				.filter(httpExchange -> uriFilter
-						.test(httpExchange.getRequest().getUri().getPath()))
-				.addKeyValues(true).build();
-	}
-
-	@Bean
 	@Order(2)
-	public SecurityFilterChain securityFilterChain(HttpSecurity http,
-			HttpExchangeRepository repository, HttpExchangesProperties properties)
-			throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http
 				.authorizeHttpRequests(auth -> auth.requestMatchers(OPTIONS).permitAll()
 						.requestMatchers("/info", "/oauth/token", "/swagger-ui/**",
@@ -88,12 +73,7 @@ public class SecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
 				.cors(Customizer.withDefaults())
-				.sessionManagement(c -> c.sessionCreationPolicy(STATELESS))
-				.addFilterAfter(
-						new HttpExchangesFilter(repository,
-								properties.getRecording().getInclude()),
-						SecurityContextHolderAwareRequestFilter.class)
-				.build();
+				.sessionManagement(c -> c.sessionCreationPolicy(STATELESS)).build();
 	}
 
 	@Bean

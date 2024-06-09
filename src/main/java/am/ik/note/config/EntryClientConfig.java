@@ -3,6 +3,8 @@ package am.ik.note.config;
 import am.ik.note.entry.EntryClient;
 import am.ik.note.entry.EntryProps;
 import am.ik.spring.http.client.RetryableClientHttpRequestInterceptor;
+import org.zalando.logbook.spring.LogbookClientHttpRequestInterceptor;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
@@ -20,12 +22,14 @@ import java.util.List;
 public class EntryClientConfig {
 
 	@Bean
-	public RestTemplateCustomizer restTemplateCustomizer(EntryProps props) {
+	public RestTemplateCustomizer restTemplateCustomizer(EntryProps props,
+			LogbookClientHttpRequestInterceptor logbookClientHttpRequestInterceptor) {
 		final ExponentialBackOff backOff = new ExponentialBackOff(
 				props.retryInterval().toMillis(), 2);
 		backOff.setMaxElapsedTime(props.retryMaxElapsedTime().toMillis());
-		return restTemplate -> restTemplate.setInterceptors(
-				List.of(new RetryableClientHttpRequestInterceptor(backOff)));
+		return restTemplate -> restTemplate
+				.setInterceptors(List.of(logbookClientHttpRequestInterceptor,
+						new RetryableClientHttpRequestInterceptor(backOff)));
 	}
 
 	@Bean

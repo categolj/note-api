@@ -1,8 +1,13 @@
 package am.ik.note.entry;
 
 import am.ik.note.config.EntryClientConfig;
+import am.ik.spring.logbook.AccessLoggerLogbookAutoConfiguration;
 import org.junit.jupiter.api.Test;
+import org.zalando.logbook.autoconfigure.LogbookAutoConfiguration;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -21,9 +26,10 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
 @RestClientTest(properties = { "logging.level.web=INFO",
-		"logging.level.am.ik.spring.http.client.RetryableClientHttpRequestInterceptor=DEBUG",
 		"entry.retry-interval=5ms", "entry.retry-max-elapsed-time=40ms",
 		"entry.api-url=https://example.com" })
+@ImportAutoConfiguration({ JacksonAutoConfiguration.class,
+		AccessLoggerLogbookAutoConfiguration.class, LogbookAutoConfiguration.class })
 @Import(EntryClientConfig.class)
 class EntryClientTest {
 	@Autowired
