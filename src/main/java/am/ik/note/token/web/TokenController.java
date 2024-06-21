@@ -33,7 +33,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -78,6 +77,11 @@ public class TokenController {
 			final Set<String> scope = userDetails.getAuthorities().stream()
 					.map(GrantedAuthority::getAuthority)
 					.collect(toCollection(TreeSet::new));
+			log.atInfo().addKeyValue("username", userDetails.getUsername())
+					.addKeyValue("scope", scope).addKeyValue("expires_at", expiresAt)
+					.log("""
+							msg="The token was issued successfully"
+							""".trim());
 			final JwtClaimsSet claims = JwtClaimsSet.builder().issuer(issuer)
 					.issuedAt(issuedAt).expiresAt(expiresAt).subject(subject)
 					.audience(List.of("note.ik.am")).claim("scope", scope)
@@ -88,8 +92,10 @@ public class TokenController {
 							Duration.between(issuedAt, expiresAt).getSeconds(), scope));
 		}
 		catch (AuthenticationException e) {
-			log.warn("Authentication failed username:{} message:{}", input.username(),
-					e.getMessage());
+			log.atWarn().addKeyValue("username", input.username())
+					.addKeyValue("reason", e.getMessage()).log("""
+							msg="Authentication failed"
+							""".trim());
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(new OAuth2Error("unauthorized", e.getMessage()));
 		}
