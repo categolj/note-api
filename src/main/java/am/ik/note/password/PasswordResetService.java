@@ -1,17 +1,22 @@
 package am.ik.note.password;
 
+import java.net.URI;
 import java.time.Clock;
 
 import am.ik.note.reader.ReaderId;
-import am.ik.note.reader.ReaderInitializer;
+import am.ik.note.reader.ReaderInitializeEvent;
 import am.ik.note.reader.ReaderPassword;
 import am.ik.note.reader.ReaderPasswordMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static am.ik.note.password.PasswordResetCompletedEventBuilder.passwordResetCompletedEvent;
+import static am.ik.note.password.PasswordResetLinkSendEventBuilder.passwordResetLinkSendEvent;
 
 @Service
 public class PasswordResetService {
@@ -21,23 +26,20 @@ public class PasswordResetService {
 
 	private final ReaderPasswordMapper readerPasswordMapper;
 
-	private final PasswordResetSender passwordResetSender;
+	private final ApplicationEventPublisher eventPublisher;
 
 	private final PasswordEncoder passwordEncoder;
-
-	private final ReaderInitializer readerInitializer;
 
 	private final Clock clock;
 
 	public PasswordResetService(PasswordResetMapper passwordResetMapper,
 			ReaderPasswordMapper readerPasswordMapper,
-			PasswordResetSender passwordResetSender, PasswordEncoder passwordEncoder,
-			ReaderInitializer readerInitializer, Clock clock) {
+			ApplicationEventPublisher eventPublisher, PasswordEncoder passwordEncoder,
+			Clock clock) {
 		this.passwordResetMapper = passwordResetMapper;
 		this.readerPasswordMapper = readerPasswordMapper;
-		this.passwordResetSender = passwordResetSender;
+		this.eventPublisher = eventPublisher;
 		this.passwordEncoder = passwordEncoder;
-		this.readerInitializer = readerInitializer;
 		this.clock = clock;
 	}
 
@@ -46,7 +48,12 @@ public class PasswordResetService {
 		final int count = this.passwordResetMapper.insert(passwordReset.resetId(),
 				passwordReset.readerId());
 		log.info("Send Link: {}", passwordReset);
-		this.passwordResetSender.sendLink(passwordReset);
+		URI link = URI.create(String.format("https://ik.am/note/password_reset/%s",
+				passwordReset.resetId()));
+		PasswordResetLinkSendEvent event = passwordResetLinkSendEvent()
+				.readerId(passwordReset.readerId()).link(link)
+				.expiry(passwordReset.expiry()).build();
+		this.eventPublisher.publishEvent(event);
 		return count;
 	}
 
@@ -61,8 +68,10 @@ public class PasswordResetService {
 		final String encodedPassword = this.passwordEncoder.encode(newPassword);
 		final int count = this.readerPasswordMapper
 				.insert(new ReaderPassword(readerId, encodedPassword));
-		this.readerInitializer.initialize(readerId);
-		this.passwordResetSender.notifyReset(passwordReset);
+		this.eventPublisher.publishEvent(new ReaderInitializeEvent(readerId));
+		PasswordResetCompletedEvent event = passwordResetCompletedEvent()
+				.readerId(passwordReset.readerId()).build();
+		this.eventPublisher.publishEvent(event);
 		return count;
 	}
 }

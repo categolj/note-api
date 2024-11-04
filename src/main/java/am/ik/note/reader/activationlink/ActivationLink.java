@@ -13,7 +13,7 @@ public record ActivationLink(@JsonUnwrapped ActivationLinkId activationId,
 							 OffsetDateTime createdAt) {
 
 	public OffsetDateTime expiry() {
-		return this.createdAt.plus(3, ChronoUnit.DAYS);
+		return this.createdAt.plusDays(3);
 	}
 
 	@JsonIgnore

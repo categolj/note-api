@@ -1,35 +1,34 @@
 package am.ik.note.reader;
 
+import java.net.URI;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 
 import am.ik.note.MockConfig;
 import am.ik.note.MockIdGenerator;
+import am.ik.note.TestContainersConfig;
 import am.ik.note.reader.activationlink.ActivationLink;
 import am.ik.note.reader.activationlink.ActivationLinkExpiredException;
 import am.ik.note.reader.activationlink.ActivationLinkId;
 import am.ik.note.reader.activationlink.ActivationLinkMapper;
-import am.ik.note.reader.activationlink.ActivationLinkSender;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.system.CapturedOutput;
-import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.modulith.test.ApplicationModuleTest;
+import org.springframework.modulith.test.AssertablePublishedEvents;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-@ExtendWith({ SpringExtension.class, OutputCaptureExtension.class })
-@Import({ ReaderService.class, MockConfig.class })
+@Import({ MockConfig.class, TestContainersConfig.class })
+@ApplicationModuleTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class ReaderServiceTest {
 	@MockBean
 	ReaderMapper readerMapper;
@@ -40,12 +39,6 @@ class ReaderServiceTest {
 	@MockBean
 	ActivationLinkMapper activationLinkMapper;
 
-	@MockBean
-	ActivationLinkSender activationLinkSender;
-
-	@MockBean
-	ReaderInitializer readerInitializer;
-
 	@Autowired
 	MockIdGenerator idGenerator;
 
@@ -53,7 +46,7 @@ class ReaderServiceTest {
 	ReaderService readerService;
 
 	@Test
-	void createReader(CapturedOutput capture) {
+	void createReader(AssertablePublishedEvents events) {
 		this.idGenerator.putId(UUID.fromString("b734fc36-9985-45c0-adf2-f799e8d641e9"));
 		this.idGenerator.putId(UUID.fromString("931f3d49-4f48-4214-bab3-c5b659b6b24c"));
 		final ArgumentCaptor<ReaderPassword> captor = ArgumentCaptor
@@ -68,17 +61,21 @@ class ReaderServiceTest {
 				ActivationLinkId.valueOf("931f3d49-4f48-4214-bab3-c5b659b6b24c"));
 		assertThat(activationLink.createdAt())
 				.isEqualTo(OffsetDateTime.parse("2022-12-06T06:38:31.343307Z"));
-		assertThat(capture.toString()).contains(
-				"sendActivationLink: demo@example.com 931f3d49-4f48-4214-bab3-c5b659b6b24c");
 		verify(this.readerPasswordMapper).insert(captor.capture());
 		final ReaderPassword readerPassword = captor.getValue();
 		assertThat(readerPassword.readerId())
 				.isEqualTo(ReaderId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
 		assertThat(readerPassword.hashedPassword()).isEqualTo("{noop}password");
+		assertThat(events).contains(ActivationLinkSendEvent.class)
+				.matching(ActivationLinkSendEvent::email, "demo@example.com")
+				.matching(ActivationLinkSendEvent::link, URI.create(
+						"https://ik.am/note/readers/b734fc36-9985-45c0-adf2-f799e8d641e9/activations/931f3d49-4f48-4214-bab3-c5b659b6b24c"))
+				.matching(ActivationLinkSendEvent::expiry,
+						OffsetDateTime.parse("2022-12-09T06:38:31.343307Z"));
 	}
 
 	@Test
-	void createReaderExisting(CapturedOutput capture) {
+	void createReaderExisting(AssertablePublishedEvents events) {
 		this.idGenerator.putId(UUID.fromString("b734fc36-9985-45c0-adf2-f799e8d641e9"));
 		final ArgumentCaptor<ReaderPassword> captor = ArgumentCaptor
 				.forClass(ReaderPassword.class);
@@ -93,37 +90,43 @@ class ReaderServiceTest {
 				ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
 		assertThat(activationLink.createdAt())
 				.isEqualTo(OffsetDateTime.parse("2022-12-06T06:38:31.343307Z"));
-		assertThat(capture.toString()).contains(
-				"sendActivationLink: demo@example.com b734fc36-9985-45c0-adf2-f799e8d641e9");
 		verify(this.readerPasswordMapper).insert(captor.capture());
 		final ReaderPassword readerPassword = captor.getValue();
 		assertThat(readerPassword.readerId())
 				.isEqualTo(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"));
 		assertThat(readerPassword.hashedPassword()).isEqualTo("{noop}password");
+		assertThat(events).contains(ActivationLinkSendEvent.class)
+				.matching(ActivationLinkSendEvent::email, "demo@example.com")
+				.matching(ActivationLinkSendEvent::link, URI.create(
+						"https://ik.am/note/readers/c872edeb-1d86-4c1a-81ac-895ace606ec4/activations/b734fc36-9985-45c0-adf2-f799e8d641e9"))
+				.matching(ActivationLinkSendEvent::expiry,
+						OffsetDateTime.parse("2022-12-09T06:38:31.343307Z"));
 	}
 
 	@Test
-	void activate() {
+	void activate(AssertablePublishedEvents events) {
 		final ActivationLink activationLink = new ActivationLink(
 				ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"),
 				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
-				OffsetDateTime.parse("2022-12-06T06:38:31.343307Z")
-						.minus(3L, ChronoUnit.DAYS).plus(1L, ChronoUnit.MINUTES));
+				OffsetDateTime.parse("2022-12-06T06:38:31.343307Z").minusDays(3L)
+						.plusMinutes(1L));
 		final ActivationLinkId activationLinkId = this.readerService
 				.activate(activationLink);
 		assertThat(activationLinkId).isEqualTo(
 				ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"));
+		assertThat(events).contains(ReaderInitializeEvent.class).matching(
+				ReaderInitializeEvent::readerId,
+				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"));
 	}
 
 	@Test
 	void activateExpired() {
 		final ActivationLink activationLink = new ActivationLink(
 				ActivationLinkId.valueOf("b734fc36-9985-45c0-adf2-f799e8d641e9"),
-				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime
-						.parse("2022-12-06T06:38:31.343307Z").minus(3L, ChronoUnit.DAYS));
-		assertThatThrownBy(() -> {
-			this.readerService.activate(activationLink);
-		}).isInstanceOf(ActivationLinkExpiredException.class);
+				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
+				OffsetDateTime.parse("2022-12-06T06:38:31.343307Z").minusDays(3L));
+		assertThatThrownBy(() -> this.readerService.activate(activationLink))
+				.isInstanceOf(ActivationLinkExpiredException.class);
 	}
 
 }

@@ -1,29 +1,32 @@
-package am.ik.note.reader;
+package am.ik.note.content;
 
-import am.ik.note.content.NoteId;
-import am.ik.note.content.NoteReaderMapper;
-import am.ik.note.content.NoteService;
+import am.ik.note.reader.ReaderId;
+import am.ik.note.reader.ReaderInitializeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
-public class ReaderInitializer {
-	private final Logger log = LoggerFactory.getLogger(ReaderInitializer.class);
+public class ReaderInitializeEventListener {
+	private final Logger log = LoggerFactory
+			.getLogger(ReaderInitializeEventListener.class);
 
 	private final NoteService noteService;
 
 	private final NoteReaderMapper noteReaderMapper;
 
-	public ReaderInitializer(NoteService noteService, NoteReaderMapper noteReaderMapper) {
+	public ReaderInitializeEventListener(NoteService noteService,
+			NoteReaderMapper noteReaderMapper) {
 		this.noteService = noteService;
 		this.noteReaderMapper = noteReaderMapper;
 	}
 
-	@Transactional
-	public void initialize(ReaderId readerId) {
+	@ApplicationModuleListener
+	void onInitialize(ReaderInitializeEvent event) {
+		log.info("Received Initialize event: {}", event);
+		ReaderId readerId = event.readerId();
 		try {
 			// entryId = 100
 			this.subscribeIfNotSubscribed(

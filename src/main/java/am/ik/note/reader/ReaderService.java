@@ -1,5 +1,6 @@
 package am.ik.note.reader;
 
+import java.net.URI;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 
@@ -7,14 +8,16 @@ import am.ik.note.reader.activationlink.ActivationLink;
 import am.ik.note.reader.activationlink.ActivationLinkExpiredException;
 import am.ik.note.reader.activationlink.ActivationLinkId;
 import am.ik.note.reader.activationlink.ActivationLinkMapper;
-import am.ik.note.reader.activationlink.ActivationLinkSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.IdGenerator;
+
+import static am.ik.note.reader.ActivationLinkSendEventBuilder.activationLinkSendEvent;
 
 @Service
 public class ReaderService {
@@ -26,11 +29,9 @@ public class ReaderService {
 
 	private final ActivationLinkMapper activationLinkMapper;
 
-	private final ActivationLinkSender activationLinkSender;
-
-	private final ReaderInitializer readerInitializer;
-
 	private final PasswordEncoder passwordEncoder;
+
+	private final ApplicationEventPublisher eventPublisher;
 
 	private final IdGenerator idGenerator;
 
@@ -38,16 +39,14 @@ public class ReaderService {
 
 	public ReaderService(ReaderMapper readerMapper,
 			ReaderPasswordMapper readerPasswordMapper,
-			ActivationLinkMapper activationLinkMapper,
-			ActivationLinkSender activationLinkSender,
-			ReaderInitializer readerInitializer, PasswordEncoder passwordEncoder,
-			IdGenerator idGenerator, Clock clock) {
+			ActivationLinkMapper activationLinkMapper, PasswordEncoder passwordEncoder,
+			ApplicationEventPublisher eventPublisher, IdGenerator idGenerator,
+			Clock clock) {
 		this.readerMapper = readerMapper;
 		this.readerPasswordMapper = readerPasswordMapper;
 		this.activationLinkMapper = activationLinkMapper;
-		this.activationLinkSender = activationLinkSender;
-		this.readerInitializer = readerInitializer;
 		this.passwordEncoder = passwordEncoder;
+		this.eventPublisher = eventPublisher;
 		this.idGenerator = idGenerator;
 		this.clock = clock;
 	}
@@ -68,7 +67,12 @@ public class ReaderService {
 				OffsetDateTime.now(this.clock));
 		this.activationLinkMapper.insert(activationLink);
 		log.info("sendActivationLink: {} {}", email, activationLink.activationId());
-		this.activationLinkSender.sendActivationLink(email, activationLink);
+		URI link = URI
+				.create(String.format("https://ik.am/note/readers/%s/activations/%s",
+						activationLink.readerId(), activationLink.activationId()));
+		ActivationLinkSendEvent event = activationLinkSendEvent().email(email).link(link)
+				.expiry(activationLink.expiry()).build();
+		this.eventPublisher.publishEvent(event);
 		return activationLink;
 	}
 
@@ -80,7 +84,7 @@ public class ReaderService {
 		}
 		final ReaderId readerId = activationLink.readerId();
 		this.readerMapper.updateReaderState(readerId, ReaderState.ENABLED);
-		this.readerInitializer.initialize(readerId);
+		this.eventPublisher.publishEvent(new ReaderInitializeEvent(readerId));
 		return activationLink.activationId();
 	}
 }

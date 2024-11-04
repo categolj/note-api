@@ -5,7 +5,7 @@ services:
     labels:
       org.springframework.boot.service-connection: postgres
     ports:
-    - 5432:5432
+    - 6432:5432
     environment:
       POSTGRES_DB: note
       POSTGRES_USER: note

@@ -15,6 +15,6 @@ public record PasswordReset(@JsonUnwrapped PasswordResetId resetId, ReaderId rea
 	}
 
 	public OffsetDateTime expiry() {
-		return this.createdAt.plus(3, ChronoUnit.DAYS);
+		return this.createdAt.plusDays(3);
 	}
 }

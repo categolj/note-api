@@ -14,6 +14,7 @@ import am.ik.note.reader.ReaderMapper;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.IdGenerator;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,6 +43,7 @@ public class PasswordResetController {
 	}
 
 	@PostMapping(path = "/send_link")
+	@Transactional
 	public ResponseEntity<ResponseMessage> sendLink(@RequestBody SendLinkInput input) {
 		final String email = input.email();
 		return ResponseEntity.of(this.readerMapper.findByEmail(email)

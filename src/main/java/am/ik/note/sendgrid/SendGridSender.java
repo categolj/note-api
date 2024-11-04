@@ -6,10 +6,11 @@ import java.io.UncheckedIOException;
 import com.sendgrid.Method;
 import com.sendgrid.Request;
 import com.sendgrid.Response;
-import com.sendgrid.SendGrid;
+import com.sendgrid.SendGridAPI;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import io.micrometer.observation.annotation.Observed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,13 +22,15 @@ import org.springframework.web.server.ResponseStatusException;
 public class SendGridSender {
 	private final Logger log = LoggerFactory.getLogger(SendGridSender.class);
 
-	private final SendGrid sendGrid;
+	private final SendGridAPI sendGrid;
 
-	public SendGridSender(SendGrid sendGrid) {
+	public SendGridSender(SendGridAPI sendGrid) {
 		this.sendGrid = sendGrid;
 	}
 
+	@Observed
 	public void sendMail(String to, String subject, String content) {
+		log.info("Sending mail to {} subject {}", to, subject);
 		try {
 			Mail mail = new Mail(new Email("noreply@ik.am"), subject, new Email(to),
 					new Content("text/plain", content));
