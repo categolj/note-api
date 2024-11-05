@@ -114,6 +114,11 @@
 			<version>2.6.0</version>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-bindings</artifactId>
+			<version>2.0.3</version>
+		</dependency>
+		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 			<scope>runtime</scope>
@@ -227,6 +232,14 @@
 						<spring.security.version>${spring-security.version}
 						</spring.security.version>
 					</additionalProperties>
+					<image>
+						<env>
+							<BP_OCI_SOURCE>https://github.com/${env.GITHUB_REPOSITORY}</BP_OCI_SOURCE>
+							<BP_OCI_REVISION>${env.GITHUB_SHA}</BP_OCI_REVISION>
+							<BP_JVM_CDS_ENABLED>true</BP_JVM_CDS_ENABLED>
+							<CDS_TRAINING_JAVA_TOOL_OPTIONS>-Dspring.flyway.enabled=false -Dspring.autoconfigure.exclude=org.springframework.modulith.events.jdbc.JdbcEventPublicationAutoConfiguration</CDS_TRAINING_JAVA_TOOL_OPTIONS>
+						</env>
+					</image>
 				</configuration>
 			</plugin>
 			<plugin>
