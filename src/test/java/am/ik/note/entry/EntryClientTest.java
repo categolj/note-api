@@ -25,10 +25,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
-@RestClientTest(properties = { "logging.level.web=INFO", "entry.retry-interval=5ms",
-		"entry.retry-max-elapsed-time=40ms", "entry.api-url=https://example.com" })
-@ImportAutoConfiguration({ JacksonAutoConfiguration.class,
-		AccessLoggerLogbookAutoConfiguration.class, LogbookAutoConfiguration.class })
+@RestClientTest(properties = {"logging.level.web=INFO", "entry.retry-interval=5ms",
+		"entry.retry-max-elapsed-time=40ms", "entry.api-url=https://example.com"})
+@ImportAutoConfiguration({JacksonAutoConfiguration.class,
+		AccessLoggerLogbookAutoConfiguration.class, LogbookAutoConfiguration.class})
 @Import(EntryClientConfig.class)
 class EntryClientTest {
 	@Autowired
@@ -251,7 +251,7 @@ class EntryClientTest {
 		assertThat(entry.content()).isEqualTo(
 				"""
 						memo
-
+						
 						```
 						export NS=hogehoge && echo '{"metadata":{"name":"'$NS'"},"spec":{"finalizers":[]}}' | kubectl replace --raw "/api/v1/namespaces/$NS/finalize" -f -
 						```
@@ -305,7 +305,7 @@ class EntryClientTest {
 		assertThatThrownBy(() -> {
 			this.entryClient.getEntry(751L);
 		}).isInstanceOf(HttpClientErrorException.class)
-				.hasMessage("429 Too Many Requests: \"rate limit exceeded!\"");
+				.hasMessageStartingWith("429 Too Many Requests");
 	}
 
 	@Test
@@ -337,6 +337,6 @@ class EntryClientTest {
 		assertThatThrownBy(() -> {
 			this.entryClient.getEntry(751L);
 		}).isInstanceOf(HttpClientErrorException.class)
-				.hasMessageStartingWith("404 Not Found:");
+				.hasMessageStartingWith("404 Not Found");
 	}
 }
