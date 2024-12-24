@@ -53,7 +53,7 @@ import static org.mockito.Mockito.verify;
 @Import(TestContainersConfig.class)
 @Testcontainers(disabledWithoutDocker = true)
 @TestMethodOrder(OrderAnnotation.class)
-//@AutoConfigureObservability
+// @AutoConfigureObservability
 public class End2EndIntegrationTest {
 
 	@LocalServerPort

@@ -11,6 +11,8 @@ services:
       POSTGRES_USER: note
       POSTGRES_PASSWORD: note
   zipkin:
-    image: openzipkin/zipkin-slim
+    image: ghcr.io/openzipkin-contrib/zipkin-otel:main
     ports:
-    - 9411:9411
+    - '9411:9411'
+    environment:
+      UI_ENABLED: 'true'
