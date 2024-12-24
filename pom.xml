@@ -136,7 +136,7 @@
 		<dependency>
 			<groupId>cc.jilt</groupId>
 			<artifactId>jilt</artifactId>
-			<version>1.6.2</version>
+			<version>1.6.3</version>
 			<scope>provided</scope> <!-- Jilt is not needed at runtime -->
 		</dependency>
 		<dependency>
