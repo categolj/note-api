@@ -25,6 +25,7 @@ public class BraveConfig {
 				.resourceAttributes(properties.getResourceAttributes())
 				.tagToAttributes(TagToAttributes.newBuilder().withDefaults()
 						.tagToAttribute("method", "http.request.method")
+						.tagToAttribute("status", "http.response.status_code")
 						.tagToAttribute("uri", (builder, value) -> {
 							Span span = builder.build();
 							if ("none".equals(value)) {
