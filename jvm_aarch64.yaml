@@ -1,2 +1,2 @@
-image: ghcr.io/categolj/note-api@sha256:7c3ad2045f275424517fb3593c02b6cf757c17c842ae471c42621abd69dbf67c
-git_revision: 0a2a3c5447782cdca3ef22a002f9850abf54d6f3
+image: ghcr.io/categolj/note-api@sha256:c240dae3c6f84fbff103265202bfa78c31a9c77a025a746988bb1f5ab50753b9
+git_revision: f98bef1101166f29be3b3c80fe464ffd30eacdac
