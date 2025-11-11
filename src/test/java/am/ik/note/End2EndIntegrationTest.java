@@ -11,8 +11,6 @@ import am.ik.note.reader.Reader;
 import am.ik.note.reader.ReaderId;
 import am.ik.note.reader.ReaderMapper;
 import am.ik.note.reader.activationlink.ActivationLinkMapper;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -41,13 +39,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
-		properties = { "logging.level.web=INFO", "maildev.port=0", "spring.http.client.factory=simple",
-				"spring.modulith.events.republish-outstanding-events-on-restart=false" })
+		properties = { "logging.level.web=INFO", "maildev.port=0", "spring.http.clients.imperative.factory=simple" })
 @Import(TestContainersConfig.class)
 @Testcontainers(disabledWithoutDocker = true)
 @TestMethodOrder(OrderAnnotation.class)
@@ -81,7 +80,7 @@ public class End2EndIntegrationTest {
 	ActivationLinkMapper activationLinkMapper;
 
 	@Autowired
-	ObjectMapper objectMapper;
+	JsonMapper objectMapper;
 
 	@MockitoBean
 	EntryClient entryClient;

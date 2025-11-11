@@ -4,7 +4,7 @@ import am.ik.note.entry.EntryClient;
 import am.ik.note.entry.EntryProps;
 import am.ik.spring.http.client.RetryableClientHttpRequestInterceptor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.client.RestClientCustomizer;
+import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.backoff.ExponentialBackOff;

@@ -1,8 +1,8 @@
 package am.ik.note.config;
 
 import org.springframework.boot.SpringBootVersion;
-import org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.opentelemetry.autoconfigure.OpenTelemetryProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import zipkin2.reporter.Encoding;

@@ -1,18 +1,14 @@
 package am.ik.note.reader.activationlink;
 
+import am.ik.note.reader.ReaderId;
+import am.ik.note.reader.ReaderMapper;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
-
-import am.ik.note.reader.ReaderId;
-import am.ik.note.reader.ReaderMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.jdbc.test.autoconfigure.JdbcTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -22,7 +18,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
-@AutoConfigureTestDatabase(replace = Replace.NONE)
 @Import({ ActivationLinkMapper.class, ReaderMapper.class })
 @Testcontainers(disabledWithoutDocker = true)
 class ActivationLinkMapperTest {
