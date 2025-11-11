@@ -1,8 +1,5 @@
 package am.ik.note.reader.web;
 
-import java.time.OffsetDateTime;
-import java.util.Optional;
-
 import am.ik.note.config.SecurityConfig;
 import am.ik.note.reader.ReaderId;
 import am.ik.note.reader.ReaderMapper;
@@ -11,13 +8,14 @@ import am.ik.note.reader.activationlink.ActivationLink;
 import am.ik.note.reader.activationlink.ActivationLinkExpiredException;
 import am.ik.note.reader.activationlink.ActivationLinkId;
 import am.ik.note.reader.activationlink.ActivationLinkMapper;
+import java.time.OffsetDateTime;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -33,13 +31,13 @@ class ReaderControllerTest {
 	@Autowired
 	MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	ReaderService readerService;
 
-	@MockBean
+	@MockitoBean
 	ReaderMapper readerMapper;
 
-	@MockBean
+	@MockitoBean
 	ActivationLinkMapper activationLinkMapper;
 
 	@Test

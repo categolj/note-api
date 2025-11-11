@@ -1,8 +1,5 @@
 package am.ik.note.password.web;
 
-import java.time.OffsetDateTime;
-import java.util.Optional;
-
 import am.ik.note.config.SecurityConfig;
 import am.ik.note.password.PasswordReset;
 import am.ik.note.password.PasswordResetExpiredException;
@@ -13,13 +10,14 @@ import am.ik.note.reader.Reader;
 import am.ik.note.reader.ReaderId;
 import am.ik.note.reader.ReaderMapper;
 import am.ik.note.reader.ReaderState;
+import java.time.OffsetDateTime;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.IdGenerator;
 
@@ -36,16 +34,16 @@ class PasswordResetControllerTest {
 	@Autowired
 	MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	PasswordResetService passwordResetService;
 
-	@MockBean
+	@MockitoBean
 	PasswordResetMapper passwordResetMapper;
 
-	@MockBean
+	@MockitoBean
 	ReaderMapper readerMapper;
 
-	@MockBean
+	@MockitoBean
 	IdGenerator idGenerator;
 
 	@Test

@@ -1,9 +1,5 @@
 package am.ik.note.content.web;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
 import am.ik.note.config.SecurityConfig;
 import am.ik.note.content.Note;
 import am.ik.note.content.NoteDetails;
@@ -17,13 +13,15 @@ import am.ik.note.entry.Author;
 import am.ik.note.entry.FrontMatter;
 import am.ik.note.reader.ReaderId;
 import am.ik.note.reader.ReaderMapper;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.BDDMockito.given;
@@ -39,13 +37,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(SecurityConfig.class)
 class NoteControllerTest {
 
-	@MockBean
+	@MockitoBean
 	NoteService noteService;
 
-	@MockBean
+	@MockitoBean
 	NoteMapper noteMapper;
 
-	@MockBean
+	@MockitoBean
 	ReaderMapper readerMapper;
 
 	@Autowired

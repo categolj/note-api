@@ -1,9 +1,5 @@
 package am.ik.note.content;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
 import am.ik.note.MockConfig;
 import am.ik.note.content.NoteService.SubscriptionStatus;
 import am.ik.note.entry.Author;
@@ -12,13 +8,15 @@ import am.ik.note.entry.Entry;
 import am.ik.note.entry.EntryClient;
 import am.ik.note.entry.FrontMatter;
 import am.ik.note.reader.ReaderId;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,13 +27,13 @@ import static org.mockito.BDDMockito.given;
 @Import({ NoteService.class, MockConfig.class })
 class NoteServiceTest {
 
-	@MockBean
+	@MockitoBean
 	NoteMapper noteMapper;
 
-	@MockBean
+	@MockitoBean
 	NoteReaderMapper noteReaderMapper;
 
-	@MockBean
+	@MockitoBean
 	EntryClient entryClient;
 
 	@Autowired

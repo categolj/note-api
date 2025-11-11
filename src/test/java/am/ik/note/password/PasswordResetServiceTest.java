@@ -1,9 +1,5 @@
 package am.ik.note.password;
 
-import java.net.URI;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-
 import am.ik.note.MockConfig;
 import am.ik.note.TestContainersConfig;
 import am.ik.note.content.ReaderInitializeEventListener;
@@ -11,15 +7,17 @@ import am.ik.note.reader.ReaderId;
 import am.ik.note.reader.ReaderMapper;
 import am.ik.note.reader.ReaderPassword;
 import am.ik.note.reader.ReaderPasswordMapper;
+import java.net.URI;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.modulith.test.AssertablePublishedEvents;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -31,19 +29,19 @@ import static org.mockito.Mockito.verify;
 @ApplicationModuleTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class PasswordResetServiceTest {
 
-	@MockBean
+	@MockitoBean
 	PasswordResetMapper passwordResetMapper;
 
-	@MockBean
+	@MockitoBean
 	ReaderPasswordMapper readerPasswordMapper;
 
-	@MockBean
+	@MockitoBean
 	ReaderInitializeEventListener readerInitializer;
 
 	@Autowired
 	PasswordResetService passwordResetService;
 
-	@MockBean
+	@MockitoBean
 	ReaderMapper readerMapper;
 
 	@Test

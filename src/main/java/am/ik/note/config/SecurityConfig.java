@@ -8,7 +8,6 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +19,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -72,7 +70,7 @@ public class SecurityConfig {
 				.anyRequest()
 				.hasAnyAuthority("SCOPE_note:admin"))
 			.csrf(AbstractHttpConfigurer::disable)
-			.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+			.oauth2ResourceServer(jwt -> jwt.jwt(Customizer.withDefaults()))
 			.cors(Customizer.withDefaults())
 			.sessionManagement(c -> c.sessionCreationPolicy(STATELESS))
 			.build();
@@ -86,8 +84,7 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
 			PasswordEncoder passwordEncoder) {
-		final DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-		authenticationProvider.setUserDetailsService(userDetailsService);
+		final DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(userDetailsService);
 		authenticationProvider.setPasswordEncoder(passwordEncoder);
 		return new ProviderManager(authenticationProvider);
 	}

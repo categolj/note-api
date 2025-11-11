@@ -1,20 +1,18 @@
 package am.ik.note.token.web;
 
-import java.util.Optional;
-
 import am.ik.note.MockConfig;
 import am.ik.note.config.SecurityConfig;
 import am.ik.note.reader.Reader;
 import am.ik.note.reader.ReaderId;
 import am.ik.note.reader.ReaderMapper;
 import am.ik.note.reader.ReaderState;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.BDDMockito.given;
@@ -29,7 +27,7 @@ class TokenControllerTest {
 	@Autowired
 	MockMvc mockMvc;
 
-	@MockBean
+	@MockitoBean
 	ReaderMapper readerMapper;
 
 	@Test
