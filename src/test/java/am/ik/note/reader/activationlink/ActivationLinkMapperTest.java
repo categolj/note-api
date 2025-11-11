@@ -26,10 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({ ActivationLinkMapper.class, ReaderMapper.class })
 @Testcontainers(disabledWithoutDocker = true)
 class ActivationLinkMapperTest {
+
 	@Container
 	@ServiceConnection
-	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-			"postgres:14-alpine");
+	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14-alpine");
 
 	@Autowired
 	ActivationLinkMapper activationLinkMapper;
@@ -47,14 +47,12 @@ class ActivationLinkMapperTest {
 	@Test
 	void insertAndFind() {
 		final ActivationLinkId activationLinkId = ActivationLinkId.random();
-		final OffsetDateTime created = OffsetDateTime
-				.parse("2022-12-09T10:58:12.445+09:00").toInstant()
-				.atOffset(ZoneOffset.UTC);
-		final int count = this.activationLinkMapper
-				.insert(new ActivationLink(activationLinkId, readerId, created));
+		final OffsetDateTime created = OffsetDateTime.parse("2022-12-09T10:58:12.445+09:00")
+			.toInstant()
+			.atOffset(ZoneOffset.UTC);
+		final int count = this.activationLinkMapper.insert(new ActivationLink(activationLinkId, readerId, created));
 		assertThat(count).isEqualTo(1);
-		final ActivationLink activationLink = this.activationLinkMapper
-				.findById(activationLinkId).orElseThrow();
+		final ActivationLink activationLink = this.activationLinkMapper.findById(activationLinkId).orElseThrow();
 		assertThat(activationLink.activationId()).isEqualTo(activationLinkId);
 		assertThat(activationLink.readerId()).isEqualTo(readerId);
 		assertThat(activationLink.createdAt()).isEqualTo(created);
@@ -63,16 +61,15 @@ class ActivationLinkMapperTest {
 	@Test
 	void insertAndDeleteById() {
 		final ActivationLinkId activationLinkId = ActivationLinkId.random();
-		final OffsetDateTime created = OffsetDateTime
-				.parse("2022-12-09T10:58:12.445+09:00").toInstant()
-				.atOffset(ZoneOffset.UTC);
-		final int count = this.activationLinkMapper
-				.insert(new ActivationLink(activationLinkId, readerId, created));
+		final OffsetDateTime created = OffsetDateTime.parse("2022-12-09T10:58:12.445+09:00")
+			.toInstant()
+			.atOffset(ZoneOffset.UTC);
+		final int count = this.activationLinkMapper.insert(new ActivationLink(activationLinkId, readerId, created));
 		assertThat(count).isEqualTo(1);
 		final int deleted = this.activationLinkMapper.deleteById(activationLinkId);
 		assertThat(deleted).isEqualTo(1);
-		final Optional<ActivationLink> activationLink = this.activationLinkMapper
-				.findById(activationLinkId);
+		final Optional<ActivationLink> activationLink = this.activationLinkMapper.findById(activationLinkId);
 		assertThat(activationLink.isEmpty()).isTrue();
 	}
+
 }

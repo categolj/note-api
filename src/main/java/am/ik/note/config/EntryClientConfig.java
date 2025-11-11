@@ -24,26 +24,22 @@ public class EntryClientConfig {
 	@Bean
 	public RestTemplateCustomizer restTemplateCustomizer(EntryProps props,
 			LogbookClientHttpRequestInterceptor logbookClientHttpRequestInterceptor) {
-		final ExponentialBackOff backOff = new ExponentialBackOff(
-				props.retryInterval().toMillis(), 2);
+		final ExponentialBackOff backOff = new ExponentialBackOff(props.retryInterval().toMillis(), 2);
 		backOff.setMaxElapsedTime(props.retryMaxElapsedTime().toMillis());
-		return restTemplate -> restTemplate
-				.setInterceptors(List.of(logbookClientHttpRequestInterceptor,
-						new RetryableClientHttpRequestInterceptor(backOff)));
+		return restTemplate -> restTemplate.setInterceptors(
+				List.of(logbookClientHttpRequestInterceptor, new RetryableClientHttpRequestInterceptor(backOff)));
 	}
 
 	@Bean
-	public EntryClient entryClient(RestTemplateBuilder restTemplateBuilder,
-			EntryProps props) {
+	public EntryClient entryClient(RestTemplateBuilder restTemplateBuilder, EntryProps props) {
 		final RestTemplate restTemplate = restTemplateBuilder //
-				.rootUri(props.apiUrl()) //
-				.setConnectTimeout(props.connectTimeout()) //
-				.setReadTimeout(props.readTimeout()) //
-				.basicAuthentication(props.clientId(), props.clientSecret()) //
-				.build();
+			.rootUri(props.apiUrl()) //
+			.setConnectTimeout(props.connectTimeout()) //
+			.setReadTimeout(props.readTimeout()) //
+			.basicAuthentication(props.clientId(), props.clientSecret()) //
+			.build();
 		final RestTemplateAdapter adapter = RestTemplateAdapter.create(restTemplate);
-		final HttpServiceProxyFactory factory = HttpServiceProxyFactory
-				.builderFor(adapter).build();
+		final HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
 		return factory.createClient(EntryClient.class);
 	}
 

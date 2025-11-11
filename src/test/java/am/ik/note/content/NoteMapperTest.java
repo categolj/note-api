@@ -25,10 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({ NoteMapper.class, NoteReaderMapper.class, ReaderMapper.class })
 @Testcontainers(disabledWithoutDocker = true)
 class NoteMapperTest {
+
 	@Container
 	@ServiceConnection
-	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-			"postgres:14-alpine");
+	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14-alpine");
 
 	@Autowired
 	NoteMapper noteMapper;
@@ -102,23 +102,22 @@ class NoteMapperTest {
 		this.noteReaderMapper.insertNoteReader(noteId2, readerId2);
 		this.noteReaderMapper.insertNoteReader(noteId3, readerId2);
 
-		final List<NoteSummary> summaries1 = this.noteMapper.findAll(readerId1).stream()
-				.map(NoteSummaryBuilder::build).toList();
-		final List<NoteSummary> summaries2 = this.noteMapper.findAll(readerId2).stream()
-				.map(NoteSummaryBuilder::build).toList();
+		final List<NoteSummary> summaries1 = this.noteMapper.findAll(readerId1)
+			.stream()
+			.map(NoteSummaryBuilder::build)
+			.toList();
+		final List<NoteSummary> summaries2 = this.noteMapper.findAll(readerId2)
+			.stream()
+			.map(NoteSummaryBuilder::build)
+			.toList();
 
-		assertThat(summaries1.stream().map(NoteSummary::entryId)).containsExactly(101L,
-				102L, 103L, 104L);
-		assertThat(summaries1.stream().map(NoteSummary::noteId)).containsExactly(noteId1,
-				noteId2, noteId3, noteId4);
-		assertThat(summaries1.stream().map(NoteSummary::subscribed)).containsExactly(true,
-				true, false, true);
+		assertThat(summaries1.stream().map(NoteSummary::entryId)).containsExactly(101L, 102L, 103L, 104L);
+		assertThat(summaries1.stream().map(NoteSummary::noteId)).containsExactly(noteId1, noteId2, noteId3, noteId4);
+		assertThat(summaries1.stream().map(NoteSummary::subscribed)).containsExactly(true, true, false, true);
 
-		assertThat(summaries2.stream().map(NoteSummary::entryId)).containsExactly(101L,
-				102L, 103L, 104L);
-		assertThat(summaries2.stream().map(NoteSummary::noteId)).containsExactly(noteId1,
-				noteId2, noteId3, noteId4);
-		assertThat(summaries2.stream().map(NoteSummary::subscribed)).containsExactly(true,
-				true, true, false);
+		assertThat(summaries2.stream().map(NoteSummary::entryId)).containsExactly(101L, 102L, 103L, 104L);
+		assertThat(summaries2.stream().map(NoteSummary::noteId)).containsExactly(noteId1, noteId2, noteId3, noteId4);
+		assertThat(summaries2.stream().map(NoteSummary::subscribed)).containsExactly(true, true, true, false);
 	}
+
 }

@@ -20,6 +20,7 @@ import static am.ik.note.password.PasswordResetLinkSendEventBuilder.passwordRese
 
 @Service
 public class PasswordResetService {
+
 	private final Logger log = LoggerFactory.getLogger(PasswordResetService.class);
 
 	private final PasswordResetMapper passwordResetMapper;
@@ -32,10 +33,8 @@ public class PasswordResetService {
 
 	private final Clock clock;
 
-	public PasswordResetService(PasswordResetMapper passwordResetMapper,
-			ReaderPasswordMapper readerPasswordMapper,
-			ApplicationEventPublisher eventPublisher, PasswordEncoder passwordEncoder,
-			Clock clock) {
+	public PasswordResetService(PasswordResetMapper passwordResetMapper, ReaderPasswordMapper readerPasswordMapper,
+			ApplicationEventPublisher eventPublisher, PasswordEncoder passwordEncoder, Clock clock) {
 		this.passwordResetMapper = passwordResetMapper;
 		this.readerPasswordMapper = readerPasswordMapper;
 		this.eventPublisher = eventPublisher;
@@ -45,14 +44,13 @@ public class PasswordResetService {
 
 	@Transactional
 	public int sendLink(PasswordReset passwordReset) {
-		final int count = this.passwordResetMapper.insert(passwordReset.resetId(),
-				passwordReset.readerId());
+		final int count = this.passwordResetMapper.insert(passwordReset.resetId(), passwordReset.readerId());
 		log.info("Send Link: {}", passwordReset);
-		URI link = URI.create(String.format("https://ik.am/note/password_reset/%s",
-				passwordReset.resetId()));
-		PasswordResetLinkSendEvent event = passwordResetLinkSendEvent()
-				.readerId(passwordReset.readerId()).link(link)
-				.expiry(passwordReset.expiry()).build();
+		URI link = URI.create(String.format("https://ik.am/note/password_reset/%s", passwordReset.resetId()));
+		PasswordResetLinkSendEvent event = passwordResetLinkSendEvent().readerId(passwordReset.readerId())
+			.link(link)
+			.expiry(passwordReset.expiry())
+			.build();
 		this.eventPublisher.publishEvent(event);
 		return count;
 	}
@@ -66,12 +64,11 @@ public class PasswordResetService {
 		this.readerPasswordMapper.deleteByReaderId(readerId);
 		this.passwordResetMapper.deleteByResetId(passwordReset.resetId());
 		final String encodedPassword = this.passwordEncoder.encode(newPassword);
-		final int count = this.readerPasswordMapper
-				.insert(new ReaderPassword(readerId, encodedPassword));
+		final int count = this.readerPasswordMapper.insert(new ReaderPassword(readerId, encodedPassword));
 		this.eventPublisher.publishEvent(new ReaderInitializeEvent(readerId));
-		PasswordResetCompletedEvent event = passwordResetCompletedEvent()
-				.readerId(passwordReset.readerId()).build();
+		PasswordResetCompletedEvent event = passwordResetCompletedEvent().readerId(passwordReset.readerId()).build();
 		this.eventPublisher.publishEvent(event);
 		return count;
 	}
+
 }

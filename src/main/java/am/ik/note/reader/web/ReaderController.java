@@ -25,44 +25,43 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/readers")
 @Tag(name = "reader")
 public class ReaderController {
+
 	private final ReaderService readerService;
 
 	private final ActivationLinkMapper activationLinkMapper;
 
-	public ReaderController(ReaderService readerService,
-			ActivationLinkMapper activationLinkMapper) {
+	public ReaderController(ReaderService readerService, ActivationLinkMapper activationLinkMapper) {
 		this.readerService = readerService;
 		this.activationLinkMapper = activationLinkMapper;
 	}
 
 	@PostMapping(path = "")
-	public ResponseEntity<ResponseMessage> createReader(
-			@RequestBody CreateReaderInput input) {
+	public ResponseEntity<ResponseMessage> createReader(@RequestBody CreateReaderInput input) {
 		this.readerService.createReader(input.email(), input.rawPassword());
-		return ResponseEntity
-				.ok(new ResponseMessage("Sent an activation link to " + input.email()));
+		return ResponseEntity.ok(new ResponseMessage("Sent an activation link to " + input.email()));
 	}
 
-	@PostMapping(path = "{readerId:[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}}/activations/{activationLinkId}")
+	@PostMapping(
+			path = "{readerId:[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}}/activations/{activationLinkId}")
 	@ApiResponses({
-			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResponseMessage.class))),
-			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = ResponseMessage.class))) })
-	public ResponseEntity<ResponseMessage> activate(
-			@PathVariable("readerId") ReaderId readerId,
+			@ApiResponse(responseCode = "200",
+					content = @Content(schema = @Schema(implementation = ResponseMessage.class))),
+			@ApiResponse(responseCode = "403",
+					content = @Content(schema = @Schema(implementation = ResponseMessage.class))) })
+	public ResponseEntity<ResponseMessage> activate(@PathVariable("readerId") ReaderId readerId,
 			@PathVariable("activationLinkId") ActivationLinkId activationLinkId) {
 		try {
 			return ResponseEntity.of(this.activationLinkMapper.findById(activationLinkId)
-					.filter(activationLink -> Objects.equals(activationLink.readerId(),
-							readerId))
-					.map(this.readerService::activate)
-					.map(id -> new ResponseMessage("Activated " + id)));
+				.filter(activationLink -> Objects.equals(activationLink.readerId(), readerId))
+				.map(this.readerService::activate)
+				.map(id -> new ResponseMessage("Activated " + id)));
 		}
 		catch (ActivationLinkExpiredException e) {
-			return ResponseEntity.badRequest().body(
-					new ResponseMessage("The given link has been already expired."));
+			return ResponseEntity.badRequest().body(new ResponseMessage("The given link has been already expired."));
 		}
 	}
 
 	record CreateReaderInput(String email, String rawPassword) {
 	}
+
 }

@@ -21,6 +21,7 @@ import static am.ik.note.reader.ActivationLinkSendEventBuilder.activationLinkSen
 
 @Service
 public class ReaderService {
+
 	private final Logger log = LoggerFactory.getLogger(ReaderService.class);
 
 	private final ReaderMapper readerMapper;
@@ -37,11 +38,9 @@ public class ReaderService {
 
 	private final Clock clock;
 
-	public ReaderService(ReaderMapper readerMapper,
-			ReaderPasswordMapper readerPasswordMapper,
+	public ReaderService(ReaderMapper readerMapper, ReaderPasswordMapper readerPasswordMapper,
 			ActivationLinkMapper activationLinkMapper, PasswordEncoder passwordEncoder,
-			ApplicationEventPublisher eventPublisher, IdGenerator idGenerator,
-			Clock clock) {
+			ApplicationEventPublisher eventPublisher, IdGenerator idGenerator, Clock clock) {
 		this.readerMapper = readerMapper;
 		this.readerPasswordMapper = readerPasswordMapper;
 		this.activationLinkMapper = activationLinkMapper;
@@ -53,25 +52,24 @@ public class ReaderService {
 
 	@Transactional
 	public ActivationLink createReader(String email, String rawPassword) {
-		final ReaderId readerId = this.readerMapper.findByEmail(email)
-				.map(Reader::readerId).orElseGet(() -> {
-					final ReaderId id = new ReaderId(idGenerator.generateId());
-					this.readerMapper.insert(id, email);
-					return id;
-				});
+		final ReaderId readerId = this.readerMapper.findByEmail(email).map(Reader::readerId).orElseGet(() -> {
+			final ReaderId id = new ReaderId(idGenerator.generateId());
+			this.readerMapper.insert(id, email);
+			return id;
+		});
 		final String hashedPassword = this.passwordEncoder.encode(rawPassword);
 		this.readerPasswordMapper.deleteByReaderId(readerId);
 		this.readerPasswordMapper.insert(new ReaderPassword(readerId, hashedPassword));
-		final ActivationLink activationLink = new ActivationLink(
-				new ActivationLinkId(idGenerator.generateId()), readerId,
-				OffsetDateTime.now(this.clock));
+		final ActivationLink activationLink = new ActivationLink(new ActivationLinkId(idGenerator.generateId()),
+				readerId, OffsetDateTime.now(this.clock));
 		this.activationLinkMapper.insert(activationLink);
 		log.info("sendActivationLink: {} {}", email, activationLink.activationId());
-		URI link = URI
-				.create(String.format("https://ik.am/note/readers/%s/activations/%s",
-						activationLink.readerId(), activationLink.activationId()));
-		ActivationLinkSendEvent event = activationLinkSendEvent().email(email).link(link)
-				.expiry(activationLink.expiry()).build();
+		URI link = URI.create(String.format("https://ik.am/note/readers/%s/activations/%s", activationLink.readerId(),
+				activationLink.activationId()));
+		ActivationLinkSendEvent event = activationLinkSendEvent().email(email)
+			.link(link)
+			.expiry(activationLink.expiry())
+			.build();
 		this.eventPublisher.publishEvent(event);
 		return activationLink;
 	}
@@ -87,4 +85,5 @@ public class ReaderService {
 		this.eventPublisher.publishEvent(new ReaderInitializeEvent(readerId));
 		return activationLink.activationId();
 	}
+
 }

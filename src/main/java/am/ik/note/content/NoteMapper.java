@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @Repository
 public class NoteMapper {
+
 	private final JdbcClient jdbcClient;
 
 	private final RowMapper<Note> noteRowMapper = (rs, i) -> {
@@ -31,9 +32,9 @@ public class NoteMapper {
 				FROM note AS n
 				WHERE n.note_id = ?
 				""") //
-				.param(noteId.toString()) //
-				.query(this.noteRowMapper) //
-				.optional();
+			.param(noteId.toString()) //
+			.query(this.noteRowMapper) //
+			.optional();
 	}
 
 	public Optional<Note> findByEntryId(Long entryId) {
@@ -42,9 +43,9 @@ public class NoteMapper {
 				FROM note AS n
 				WHERE n.entry_id = ?
 				""") //
-				.param(entryId) //
-				.query(this.noteRowMapper) //
-				.optional();
+			.param(entryId) //
+			.query(this.noteRowMapper) //
+			.optional();
 	}
 
 	public List<NoteSummaryBuilder> findAll(ReaderId readerId) {
@@ -55,17 +56,19 @@ public class NoteMapper {
 					ON n.note_id = nr.note_id
 					AND nr.reader_id = ?
 				ORDER BY n.entry_id ASC
-				""").param(readerId.toString()) //
-				.query((rs, i) -> {
-					final NoteId noteId = NoteId.valueOf(rs.getString("note_id"));
-					final long entryId = rs.getLong("entry_id");
-					final String noteUrl = rs.getString("note_url");
-					final boolean isSubscribed = rs.getString("reader_id") != null;
-					return new NoteSummaryBuilder().withNoteId(noteId)
-							.withEntryId(entryId).withNoteUrl(noteUrl)
-							.withSubscribed(isSubscribed);
-				}) //
-				.list();
+				""")
+			.param(readerId.toString()) //
+			.query((rs, i) -> {
+				final NoteId noteId = NoteId.valueOf(rs.getString("note_id"));
+				final long entryId = rs.getLong("entry_id");
+				final String noteUrl = rs.getString("note_url");
+				final boolean isSubscribed = rs.getString("reader_id") != null;
+				return new NoteSummaryBuilder().withNoteId(noteId)
+					.withEntryId(entryId)
+					.withNoteUrl(noteUrl)
+					.withSubscribed(isSubscribed);
+			}) //
+			.list();
 	}
 
 	@Transactional
@@ -73,10 +76,10 @@ public class NoteMapper {
 		return this.jdbcClient.sql("""
 				INSERT INTO note(note_id, entry_id, note_url) VALUES (?, ?, ?)
 				""") //
-				.param(noteId.toString()) //
-				.param(entryId) //
-				.param(noteUrl) //
-				.update();
+			.param(noteId.toString()) //
+			.param(entryId) //
+			.param(noteUrl) //
+			.update();
 	}
 
 	@Transactional
@@ -84,7 +87,8 @@ public class NoteMapper {
 		return this.jdbcClient.sql("""
 				DELETE FROM note WHERE entry_id = ?
 				""") //
-				.param(entryId) //
-				.update();
+			.param(entryId) //
+			.update();
 	}
+
 }

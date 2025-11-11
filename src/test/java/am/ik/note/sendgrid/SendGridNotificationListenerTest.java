@@ -39,6 +39,7 @@ import static org.mockito.Mockito.verify;
 @ApplicationModuleTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Import(TestContainersConfig.class)
 class SendGridNotificationListenerTest {
+
 	@MockBean
 	SendGridAPI sendGrid;
 
@@ -52,53 +53,57 @@ class SendGridNotificationListenerTest {
 	void activationLinkSend(Scenario scenario) throws Exception {
 		given(this.sendGrid.api(any())).willReturn(new Response(202, "OK", Map.of()));
 		ActivationLinkSendEvent event = activationLinkSendEvent().email("foo@example.com")
-				.link(URI.create("https://example.com/activation"))
-				.expiry(OffsetDateTime.now()).build();
-		scenario.publish(event).andWaitForStateChange(
-				() -> registry.findIncompletePublications(), Collection::isEmpty);
+			.link(URI.create("https://example.com/activation"))
+			.expiry(OffsetDateTime.now())
+			.build();
+		scenario.publish(event).andWaitForStateChange(() -> registry.findIncompletePublications(), Collection::isEmpty);
 		ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
 		verify(this.sendGrid).api(captor.capture());
 		Request request = captor.getValue();
 		assertThat(request.getBody()).contains("アカウントアクティベーションリンク通知")
-				.contains("foo@example.com").contains(event.link().toString())
-				.contains(event.expiry().toString());
+			.contains("foo@example.com")
+			.contains(event.link().toString())
+			.contains(event.expiry().toString());
 	}
 
 	@Test
 	void passwordResetLinkSend(Scenario scenario) throws Exception {
 		ReaderId readerId = ReaderId.valueOf("44698583-f657-4fda-89b5-6c2f3522e855");
-		given(this.readerMapper.findById(readerId)).willReturn(
-				Optional.of(reader().readerId(readerId).email("foo@example.com")
-						.hashedPassword("").readerState(ReaderState.ENABLED).build()));
+		given(this.readerMapper.findById(readerId)).willReturn(Optional.of(reader().readerId(readerId)
+			.email("foo@example.com")
+			.hashedPassword("")
+			.readerState(ReaderState.ENABLED)
+			.build()));
 		given(this.sendGrid.api(any())).willReturn(new Response(202, "OK", Map.of()));
 		PasswordResetLinkSendEvent event = passwordResetLinkSendEvent().readerId(readerId)
-				.link(URI.create("https://example.com/password_reset"))
-				.expiry(OffsetDateTime.now()).build();
-		scenario.publish(event).andWaitForStateChange(
-				() -> registry.findIncompletePublications(), Collection::isEmpty);
+			.link(URI.create("https://example.com/password_reset"))
+			.expiry(OffsetDateTime.now())
+			.build();
+		scenario.publish(event).andWaitForStateChange(() -> registry.findIncompletePublications(), Collection::isEmpty);
 		ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
 		verify(this.sendGrid).api(captor.capture());
 		Request request = captor.getValue();
 		assertThat(request.getBody()).contains("パスワードリセットリンク通知")
-				.contains("foo@example.com").contains(event.link().toString())
-				.contains(event.expiry().toString());
+			.contains("foo@example.com")
+			.contains(event.link().toString())
+			.contains(event.expiry().toString());
 	}
 
 	@Test
 	void passwordResetCompleted(Scenario scenario) throws Exception {
 		ReaderId readerId = ReaderId.valueOf("44698583-f657-4fda-89b5-6c2f3522e855");
-		given(this.readerMapper.findById(readerId)).willReturn(
-				Optional.of(reader().readerId(readerId).email("foo@example.com")
-						.hashedPassword("").readerState(ReaderState.ENABLED).build()));
+		given(this.readerMapper.findById(readerId)).willReturn(Optional.of(reader().readerId(readerId)
+			.email("foo@example.com")
+			.hashedPassword("")
+			.readerState(ReaderState.ENABLED)
+			.build()));
 		given(this.sendGrid.api(any())).willReturn(new Response(202, "OK", Map.of()));
-		PasswordResetCompletedEvent event = passwordResetCompletedEvent()
-				.readerId(readerId).build();
-		scenario.publish(event).andWaitForStateChange(
-				() -> registry.findIncompletePublications(), Collection::isEmpty);
+		PasswordResetCompletedEvent event = passwordResetCompletedEvent().readerId(readerId).build();
+		scenario.publish(event).andWaitForStateChange(() -> registry.findIncompletePublications(), Collection::isEmpty);
 		ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
 		verify(this.sendGrid).api(captor.capture());
 		Request request = captor.getValue();
-		assertThat(request.getBody()).contains("パスワードリセット完了通知")
-				.contains("foo@example.com");
+		assertThat(request.getBody()).contains("パスワードリセット完了通知").contains("foo@example.com");
 	}
+
 }

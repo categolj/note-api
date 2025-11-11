@@ -89,37 +89,44 @@ public class End2EndIntegrationTest {
 
 	public End2EndIntegrationTest() {
 		this.webTestClient = WebTestClient.bindToServer(new JdkClientHttpConnector())
-				.baseUrl("http://localhost:" + port).build();
+			.baseUrl("http://localhost:" + port)
+			.build();
 	}
 
 	@Test
 	@Order(1)
 	void createAccount() throws Exception {
 		given(this.sendGrid.api(any())).willReturn(new Response(202, "OK", Map.of()));
-		this.noteMapper.insertNote(NoteId.valueOf("44b04a8f-47cf-4d5f-a273-96a40fbbe8d7"),
-				300L, "https://example.com/300");
-		this.noteMapper.insertNote(NoteId.valueOf("25773727-3af7-463d-b144-db089f4963d7"),
-				400L, "https://example.com/400");
-		this.webTestClient.post().uri("http://localhost:{port}/readers", this.port)
-				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue(
-						Map.of("email", "test@example.com", "rawPassword", "mypassword"))
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.message")
-				.isEqualTo("Sent an activation link to test@example.com");
+		this.noteMapper.insertNote(NoteId.valueOf("44b04a8f-47cf-4d5f-a273-96a40fbbe8d7"), 300L,
+				"https://example.com/300");
+		this.noteMapper.insertNote(NoteId.valueOf("25773727-3af7-463d-b144-db089f4963d7"), 400L,
+				"https://example.com/400");
+		this.webTestClient.post()
+			.uri("http://localhost:{port}/readers", this.port)
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(Map.of("email", "test@example.com", "rawPassword", "mypassword"))
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.message")
+			.isEqualTo("Sent an activation link to test@example.com");
 		ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
 		verify(this.sendGrid).api(captor.capture());
-		assertThat(captor.getValue().getBody()).contains("アカウントアクティベーションリンク通知")
-				.contains("test@example.com");
+		assertThat(captor.getValue().getBody()).contains("アカウントアクティベーションリンク通知").contains("test@example.com");
 	}
 
 	@Test
 	@Order(2)
 	void accountDisabled() throws Exception {
-		this.webTestClient.post().uri("http://localhost:{port}/oauth/token", this.port)
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-				.bodyValue(new LinkedMultiValueMap<>(Map.of("username",
-						List.of("test@example.com"), "password", List.of("mypassword"))))
-				.exchange().expectStatus().isUnauthorized();
+		this.webTestClient.post()
+			.uri("http://localhost:{port}/oauth/token", this.port)
+			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+			.bodyValue(new LinkedMultiValueMap<>(
+					Map.of("username", List.of("test@example.com"), "password", List.of("mypassword"))))
+			.exchange()
+			.expectStatus()
+			.isUnauthorized();
 	}
 
 	@Test
@@ -128,30 +135,40 @@ public class End2EndIntegrationTest {
 		var row = this.jdbcClient.sql("""
 				SELECT al.activation_id, al.reader_id
 				FROM activation_link AS al, reader AS r
-				WHERE al.reader_id = r.reader_id AND r.email = ?""")
-				.params("test@example.com").query().singleRow();
+				WHERE al.reader_id = r.reader_id AND r.email = ?""").params("test@example.com").query().singleRow();
 		String activationId = (String) row.get("activation_id");
 		String readerId = (String) row.get("reader_id");
-		this.webTestClient.post().uri(
-				"http://localhost:{port}/readers/{readerId}/activations/{activationLinkId}",
-				this.port, readerId, activationId).exchange().expectStatus().isOk()
-				.expectBody().jsonPath("$.message")
-				.isEqualTo("Activated " + activationId);
+		this.webTestClient.post()
+			.uri("http://localhost:{port}/readers/{readerId}/activations/{activationLinkId}", this.port, readerId,
+					activationId)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.message")
+			.isEqualTo("Activated " + activationId);
 	}
 
 	@Test
 	@Order(4)
 	void issueToken() throws Exception {
 		final EntityExchangeResult<byte[]> tokenResult = this.webTestClient.post()
-				.uri("http://localhost:{port}/oauth/token", this.port)
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-				.bodyValue(new LinkedMultiValueMap<>(Map.of("username",
-						List.of("test@example.com"), "password", List.of("mypassword"))))
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.expires_in")
-				.isEqualTo(43200).jsonPath("$.token_type").isEqualTo("Bearer")
-				.jsonPath("$.access_token").isNotEmpty().returnResult();
-		final JsonNode tokenNode = this.objectMapper
-				.readValue(tokenResult.getResponseBody(), JsonNode.class);
+			.uri("http://localhost:{port}/oauth/token", this.port)
+			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+			.bodyValue(new LinkedMultiValueMap<>(
+					Map.of("username", List.of("test@example.com"), "password", List.of("mypassword"))))
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.expires_in")
+			.isEqualTo(43200)
+			.jsonPath("$.token_type")
+			.isEqualTo("Bearer")
+			.jsonPath("$.access_token")
+			.isNotEmpty()
+			.returnResult();
+		final JsonNode tokenNode = this.objectMapper.readValue(tokenResult.getResponseBody(), JsonNode.class);
 		accessToken = tokenNode.get("access_token").asText();
 	}
 
@@ -159,29 +176,51 @@ public class End2EndIntegrationTest {
 	@Order(5)
 	void checkAvailableNoteList() {
 		given(this.entryClient.getEntries()).willReturn(new Entries(List.of(
-				new Entry(100L, new FrontMatter("entry 100"), null, null,
-						new Author("admin", OffsetDateTime.now())),
-				new Entry(200L, new FrontMatter("entry 200"), null, null,
-						new Author("admin", OffsetDateTime.now())),
-				new Entry(300L, new FrontMatter("entry 300"), null, null,
-						new Author("admin", OffsetDateTime.now())),
-				new Entry(400L, new FrontMatter("entry 400"), null, null,
-						new Author("admin", OffsetDateTime.now())))));
-		this.webTestClient.get().uri("http://localhost:{port}/notes", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
-				.expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(4)
-				.jsonPath("$[0].entryId").isEqualTo(100).jsonPath("$[0].title")
-				.isEqualTo("entry 100").jsonPath("$[0].noteUrl").isNotEmpty()
-				.jsonPath("$[0].subscribed").isEqualTo(true).jsonPath("$[1].entryId")
-				.isEqualTo(200).jsonPath("$[1].title").isEqualTo("entry 200")
-				.jsonPath("$[1].noteUrl").isNotEmpty().jsonPath("$[1].subscribed")
-				.isEqualTo(true).jsonPath("$[2].entryId").isEqualTo(300)
-				.jsonPath("$[2].title").isEqualTo("entry 300").jsonPath("$[2].noteUrl")
-				.isEqualTo("https://example.com/300").jsonPath("$[2].subscribed")
-				.isEqualTo(false).jsonPath("$[3].entryId").isEqualTo(400)
-				.jsonPath("$[3].title").isEqualTo("entry 400").jsonPath("$[3].noteUrl")
-				.isEqualTo("https://example.com/400").jsonPath("$[3].subscribed")
-				.isEqualTo(false);
+				new Entry(100L, new FrontMatter("entry 100"), null, null, new Author("admin", OffsetDateTime.now())),
+				new Entry(200L, new FrontMatter("entry 200"), null, null, new Author("admin", OffsetDateTime.now())),
+				new Entry(300L, new FrontMatter("entry 300"), null, null, new Author("admin", OffsetDateTime.now())),
+				new Entry(400L, new FrontMatter("entry 400"), null, null, new Author("admin", OffsetDateTime.now())))));
+		this.webTestClient.get()
+			.uri("http://localhost:{port}/notes", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.length()")
+			.isEqualTo(4)
+			.jsonPath("$[0].entryId")
+			.isEqualTo(100)
+			.jsonPath("$[0].title")
+			.isEqualTo("entry 100")
+			.jsonPath("$[0].noteUrl")
+			.isNotEmpty()
+			.jsonPath("$[0].subscribed")
+			.isEqualTo(true)
+			.jsonPath("$[1].entryId")
+			.isEqualTo(200)
+			.jsonPath("$[1].title")
+			.isEqualTo("entry 200")
+			.jsonPath("$[1].noteUrl")
+			.isNotEmpty()
+			.jsonPath("$[1].subscribed")
+			.isEqualTo(true)
+			.jsonPath("$[2].entryId")
+			.isEqualTo(300)
+			.jsonPath("$[2].title")
+			.isEqualTo("entry 300")
+			.jsonPath("$[2].noteUrl")
+			.isEqualTo("https://example.com/300")
+			.jsonPath("$[2].subscribed")
+			.isEqualTo(false)
+			.jsonPath("$[3].entryId")
+			.isEqualTo(400)
+			.jsonPath("$[3].title")
+			.isEqualTo("entry 400")
+			.jsonPath("$[3].noteUrl")
+			.isEqualTo("https://example.com/400")
+			.jsonPath("$[3].subscribed")
+			.isEqualTo(false);
 	}
 
 	@Test
@@ -191,48 +230,91 @@ public class End2EndIntegrationTest {
 				new Entry(200L, new FrontMatter("entry 200"), null, null, null),
 				new Entry(300L, new FrontMatter("entry 300"), null, null, null),
 				new Entry(400L, new FrontMatter("entry 400"), null, null, null))
-				.forEach(entry -> given(this.entryClient.getEntry(entry.entryId()))
-						.willReturn(entry));
+			.forEach(entry -> given(this.entryClient.getEntry(entry.entryId())).willReturn(entry));
 
-		this.webTestClient.get().uri("http://localhost:{port}/notes/100", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
-				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(100)
-				.jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId").doesNotExist()
-				.jsonPath("$.frontMatter.title").isEqualTo("entry 100");
+		this.webTestClient.get()
+			.uri("http://localhost:{port}/notes/100", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.entryId")
+			.isEqualTo(100)
+			.jsonPath("$.noteUrl")
+			.isNotEmpty()
+			.jsonPath("$.noteId")
+			.doesNotExist()
+			.jsonPath("$.frontMatter.title")
+			.isEqualTo("entry 100");
 
-		this.webTestClient.get().uri("http://localhost:{port}/notes/200", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
-				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(200)
-				.jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId").doesNotExist()
-				.jsonPath("$.frontMatter.title").isEqualTo("entry 200");
+		this.webTestClient.get()
+			.uri("http://localhost:{port}/notes/200", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.entryId")
+			.isEqualTo(200)
+			.jsonPath("$.noteUrl")
+			.isNotEmpty()
+			.jsonPath("$.noteId")
+			.doesNotExist()
+			.jsonPath("$.frontMatter.title")
+			.isEqualTo("entry 200");
 
-		this.webTestClient.get().uri("http://localhost:{port}/notes/300", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
-				.expectStatus().isForbidden().expectBody().jsonPath("$.message")
-				.isEqualTo("You are not allowed to access to the entry.")
-				.jsonPath("$.noteUrl").isEqualTo("https://example.com/300");
+		this.webTestClient.get()
+			.uri("http://localhost:{port}/notes/300", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isForbidden()
+			.expectBody()
+			.jsonPath("$.message")
+			.isEqualTo("You are not allowed to access to the entry.")
+			.jsonPath("$.noteUrl")
+			.isEqualTo("https://example.com/300");
 
-		this.webTestClient.get().uri("http://localhost:{port}/notes/400", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
-				.expectStatus().isForbidden().expectBody().jsonPath("$.message")
-				.isEqualTo("You are not allowed to access to the entry.")
-				.jsonPath("$.noteUrl").isEqualTo("https://example.com/400");
+		this.webTestClient.get()
+			.uri("http://localhost:{port}/notes/400", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isForbidden()
+			.expectBody()
+			.jsonPath("$.message")
+			.isEqualTo("You are not allowed to access to the entry.")
+			.jsonPath("$.noteUrl")
+			.isEqualTo("https://example.com/400");
 	}
 
 	@Test
 	@Order(6)
 	void subscribe() {
-		this.webTestClient.post().uri(
-				"http://localhost:{port}/notes/25773727-3af7-463d-b144-db089f4963d7/subscribe",
-				this.port).header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.entryId")
-				.isEqualTo(400).jsonPath("$.subscribed").isEqualTo(false);
+		this.webTestClient.post()
+			.uri("http://localhost:{port}/notes/25773727-3af7-463d-b144-db089f4963d7/subscribe", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.entryId")
+			.isEqualTo(400)
+			.jsonPath("$.subscribed")
+			.isEqualTo(false);
 
-		this.webTestClient.post().uri(
-				"http://localhost:{port}/notes/25773727-3af7-463d-b144-db089f4963d7/subscribe",
-				this.port).header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.entryId")
-				.isEqualTo(400).jsonPath("$.subscribed").isEqualTo(true);
+		this.webTestClient.post()
+			.uri("http://localhost:{port}/notes/25773727-3af7-463d-b144-db089f4963d7/subscribe", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.entryId")
+			.isEqualTo(400)
+			.jsonPath("$.subscribed")
+			.isEqualTo(true);
 	}
 
 	@Test
@@ -242,95 +324,148 @@ public class End2EndIntegrationTest {
 				new Entry(200L, new FrontMatter("entry 200"), null, null, null),
 				new Entry(300L, new FrontMatter("entry 300"), null, null, null),
 				new Entry(400L, new FrontMatter("entry 400"), null, null, null))
-				.forEach(entry -> given(this.entryClient.getEntry(entry.entryId()))
-						.willReturn(entry));
+			.forEach(entry -> given(this.entryClient.getEntry(entry.entryId())).willReturn(entry));
 
-		this.webTestClient.get().uri("http://localhost:{port}/notes/100", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
-				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(100)
-				.jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId").doesNotExist()
-				.jsonPath("$.frontMatter.title").isEqualTo("entry 100");
+		this.webTestClient.get()
+			.uri("http://localhost:{port}/notes/100", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.entryId")
+			.isEqualTo(100)
+			.jsonPath("$.noteUrl")
+			.isNotEmpty()
+			.jsonPath("$.noteId")
+			.doesNotExist()
+			.jsonPath("$.frontMatter.title")
+			.isEqualTo("entry 100");
 
-		this.webTestClient.get().uri("http://localhost:{port}/notes/200", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
-				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(200)
-				.jsonPath("$.noteUrl").isNotEmpty().jsonPath("$.noteId").doesNotExist()
-				.jsonPath("$.frontMatter.title").isEqualTo("entry 200");
+		this.webTestClient.get()
+			.uri("http://localhost:{port}/notes/200", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.entryId")
+			.isEqualTo(200)
+			.jsonPath("$.noteUrl")
+			.isNotEmpty()
+			.jsonPath("$.noteId")
+			.doesNotExist()
+			.jsonPath("$.frontMatter.title")
+			.isEqualTo("entry 200");
 
-		this.webTestClient.get().uri("http://localhost:{port}/notes/300", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
-				.expectStatus().isForbidden().expectBody().jsonPath("$.message")
-				.isEqualTo("You are not allowed to access to the entry.")
-				.jsonPath("$.noteUrl").isEqualTo("https://example.com/300");
+		this.webTestClient.get()
+			.uri("http://localhost:{port}/notes/300", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isForbidden()
+			.expectBody()
+			.jsonPath("$.message")
+			.isEqualTo("You are not allowed to access to the entry.")
+			.jsonPath("$.noteUrl")
+			.isEqualTo("https://example.com/300");
 
-		this.webTestClient.get().uri("http://localhost:{port}/notes/400", this.port)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).exchange()
-				.expectStatus().isOk().expectBody().jsonPath("$.entryId").isEqualTo(400)
-				.jsonPath("$.noteUrl").isEqualTo("https://example.com/400")
-				.jsonPath("$.noteId").doesNotExist().jsonPath("$.frontMatter.title")
-				.isEqualTo("entry 400");
+		this.webTestClient.get()
+			.uri("http://localhost:{port}/notes/400", this.port)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.entryId")
+			.isEqualTo(400)
+			.jsonPath("$.noteUrl")
+			.isEqualTo("https://example.com/400")
+			.jsonPath("$.noteId")
+			.doesNotExist()
+			.jsonPath("$.frontMatter.title")
+			.isEqualTo("entry 400");
 	}
 
 	@Test
 	@Order(8)
 	void resetPassword() throws Exception {
-		final Reader reader = this.readerMapper.findByEmail("test@example.com")
-				.orElseThrow();
+		final Reader reader = this.readerMapper.findByEmail("test@example.com").orElseThrow();
 		final ReaderId readerId = reader.readerId();
 		given(this.sendGrid.api(any())).willReturn(new Response(202, "OK", Map.of()));
 		this.webTestClient.post()
-				.uri("http://localhost:{port}/password_reset/send_link", this.port)
-				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue(Map.of("email", "test@example.com")).exchange().expectStatus()
-				.isOk().expectBody().jsonPath("$.message").isEqualTo("Sent a link.");
+			.uri("http://localhost:{port}/password_reset/send_link", this.port)
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(Map.of("email", "test@example.com"))
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.message")
+			.isEqualTo("Sent a link.");
 		{
 			Thread.sleep(100);
 			ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
 			verify(this.sendGrid).api(captor.capture());
-			assertThat(captor.getValue().getBody()).contains("パスワードリセットリンク通知")
-					.contains("test@example.com");
+			assertThat(captor.getValue().getBody()).contains("パスワードリセットリンク通知").contains("test@example.com");
 		}
 		final String resetId = this.jdbcClient.sql("""
 				SELECT reset_id FROM password_reset WHERE reader_id = ?
 				""").params(readerId.toString()).query(String.class).single();
-		this.webTestClient.post().uri("http://localhost:{port}/password_reset", this.port)
-				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue(Map.of("resetId", resetId, "newPassword", "foobar")).exchange()
-				.expectStatus().isOk().expectBody().jsonPath("$.message")
-				.isEqualTo("Reset the password");
+		this.webTestClient.post()
+			.uri("http://localhost:{port}/password_reset", this.port)
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(Map.of("resetId", resetId, "newPassword", "foobar"))
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.message")
+			.isEqualTo("Reset the password");
 		{
 			Thread.sleep(100);
 			ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
 			verify(this.sendGrid, times(2)).api(captor.capture());
-			assertThat(captor.getValue().getBody()).contains("パスワードリセット完了通知")
-					.contains("test@example.com");
+			assertThat(captor.getValue().getBody()).contains("パスワードリセット完了通知").contains("test@example.com");
 		}
 	}
 
 	@Test
 	@Order(9)
 	void issueTokenWithOldPassword() throws Exception {
-		this.webTestClient.post().uri("http://localhost:{port}/oauth/token", this.port)
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-				.bodyValue(new LinkedMultiValueMap<>(Map.of("username",
-						List.of("test@example.com"), "password", List.of("mypassword"))))
-				.exchange().expectStatus().isUnauthorized().expectBody()
-				.jsonPath("$.error").isEqualTo("unauthorized");
+		this.webTestClient.post()
+			.uri("http://localhost:{port}/oauth/token", this.port)
+			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+			.bodyValue(new LinkedMultiValueMap<>(
+					Map.of("username", List.of("test@example.com"), "password", List.of("mypassword"))))
+			.exchange()
+			.expectStatus()
+			.isUnauthorized()
+			.expectBody()
+			.jsonPath("$.error")
+			.isEqualTo("unauthorized");
 	}
 
 	@Test
 	@Order(10)
 	void issueTokenWithNewPassword() throws Exception {
 		final EntityExchangeResult<byte[]> tokenResult = this.webTestClient.post()
-				.uri("http://localhost:{port}/oauth/token", this.port)
-				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-				.bodyValue(new LinkedMultiValueMap<>(Map.of("username",
-						List.of("test@example.com"), "password", List.of("foobar"))))
-				.exchange().expectStatus().isOk().expectBody().jsonPath("$.expires_in")
-				.isEqualTo(43200).jsonPath("$.token_type").isEqualTo("Bearer")
-				.jsonPath("$.access_token").isNotEmpty().returnResult();
-		final JsonNode tokenNode = this.objectMapper
-				.readValue(tokenResult.getResponseBody(), JsonNode.class);
+			.uri("http://localhost:{port}/oauth/token", this.port)
+			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+			.bodyValue(new LinkedMultiValueMap<>(
+					Map.of("username", List.of("test@example.com"), "password", List.of("foobar"))))
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.expires_in")
+			.isEqualTo(43200)
+			.jsonPath("$.token_type")
+			.isEqualTo("Bearer")
+			.jsonPath("$.access_token")
+			.isNotEmpty()
+			.returnResult();
+		final JsonNode tokenNode = this.objectMapper.readValue(tokenResult.getResponseBody(), JsonNode.class);
 		accessToken = tokenNode.get("access_token").asText();
 		this.cleanUp();
 	}
@@ -341,4 +476,5 @@ public class End2EndIntegrationTest {
 		this.noteMapper.deleteByEntryId(400L);
 		this.readerMapper.deleteByEmail("test@example.com");
 	}
+
 }

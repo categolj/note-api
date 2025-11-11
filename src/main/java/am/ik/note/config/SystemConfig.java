@@ -9,6 +9,7 @@ import org.springframework.util.IdGenerator;
 
 @Configuration(proxyBeanMethods = false)
 public class SystemConfig {
+
 	@Bean
 	public Clock clock() {
 		return Clock.systemUTC();
@@ -18,4 +19,5 @@ public class SystemConfig {
 	public IdGenerator idGenerator() {
 		return new AlternativeJdkIdGenerator();
 	}
+
 }

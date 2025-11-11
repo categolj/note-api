@@ -12,15 +12,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SendGridNotificationListener {
+
 	private final ReaderMapper readerMapper;
 
 	private final SendGridSender sendGridSender;
 
-	private final Logger logger = LoggerFactory
-			.getLogger(SendGridNotificationListener.class);
+	private final Logger logger = LoggerFactory.getLogger(SendGridNotificationListener.class);
 
-	public SendGridNotificationListener(ReaderMapper readerMapper,
-			SendGridSender sendGridSender) {
+	public SendGridNotificationListener(ReaderMapper readerMapper, SendGridSender sendGridSender) {
 		this.readerMapper = readerMapper;
 		this.sendGridSender = sendGridSender;
 	}
@@ -54,8 +53,8 @@ public class SendGridNotificationListener {
 				リンクは%sまで有効です。
 
 				お手数おかけしますが、よろしくお願いします。""".formatted(event.link(), event.expiry());
-		this.readerMapper.findById(event.readerId()).ifPresent(
-				reader -> this.sendGridSender.sendMail(reader.email(), subject, content));
+		this.readerMapper.findById(event.readerId())
+			.ifPresent(reader -> this.sendGridSender.sendMail(reader.email(), subject, content));
 	}
 
 	@ApplicationModuleListener
@@ -68,7 +67,8 @@ public class SendGridNotificationListener {
 				パスワードがリセットされました。次のURLからログインして下さい。
 
 				https://ik.am/note/login""";
-		this.readerMapper.findById(event.readerId()).ifPresent(
-				reader -> this.sendGridSender.sendMail(reader.email(), subject, content));
+		this.readerMapper.findById(event.readerId())
+			.ifPresent(reader -> this.sendGridSender.sendMail(reader.email(), subject, content));
 	}
+
 }

@@ -42,6 +42,7 @@ import static java.util.stream.Collectors.toCollection;
 @RestController
 @Tag(name = "token")
 public class TokenController {
+
 	private final AuthenticationManager authenticationManager;
 
 	private final JwtEncoder jwtEncoder;
@@ -50,8 +51,7 @@ public class TokenController {
 
 	private final Logger log = LoggerFactory.getLogger(TokenController.class);
 
-	public TokenController(AuthenticationManager authenticationManager,
-			JwtEncoder jwtEncoder, Clock clock) {
+	public TokenController(AuthenticationManager authenticationManager, JwtEncoder jwtEncoder, Clock clock) {
 		this.authenticationManager = authenticationManager;
 		this.jwtEncoder = jwtEncoder;
 		this.clock = clock;
@@ -59,45 +59,50 @@ public class TokenController {
 
 	@PostMapping(path = "oauth/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	@ApiResponses({
-			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = OAuth2Token.class))),
-			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = OAuth2Error.class))) })
+			@ApiResponse(responseCode = "200",
+					content = @Content(schema = @Schema(implementation = OAuth2Token.class))),
+			@ApiResponse(responseCode = "401",
+					content = @Content(schema = @Schema(implementation = OAuth2Error.class))) })
 	public ResponseEntity<?> token(TokenInput input, UriComponentsBuilder builder) {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken(
-				input.username(), input.password());
+		final Authentication authentication = new UsernamePasswordAuthenticationToken(input.username(),
+				input.password());
 		try {
-			final Authentication authenticated = this.authenticationManager
-					.authenticate(authentication);
+			final Authentication authenticated = this.authenticationManager.authenticate(authentication);
 			final UserDetails userDetails = (UserDetails) authenticated.getPrincipal();
 			final String issuer = builder.path("oauth/token").build().toString();
 			final String subject = userDetails instanceof ReaderUserDetails
-					? ((ReaderUserDetails) userDetails).getReader().readerId().toString()
-					: userDetails.getUsername();
+					? ((ReaderUserDetails) userDetails).getReader().readerId().toString() : userDetails.getUsername();
 			final Instant issuedAt = Instant.now(this.clock);
 			final Instant expiresAt = issuedAt.plus(12, ChronoUnit.HOURS);
-			final Set<String> scope = userDetails.getAuthorities().stream()
-					.map(GrantedAuthority::getAuthority)
-					.collect(toCollection(TreeSet::new));
-			log.atInfo().addKeyValue("username", userDetails.getUsername())
-					.addKeyValue("scope", scope).addKeyValue("expires_at", expiresAt)
-					.log("""
-							msg="The token was issued successfully"
-							""".trim());
-			final JwtClaimsSet claims = JwtClaimsSet.builder().issuer(issuer)
-					.issuedAt(issuedAt).expiresAt(expiresAt).subject(subject)
-					.audience(List.of("note.ik.am")).claim("scope", scope)
-					.claim("preferred_username", userDetails.getUsername()).build();
+			final Set<String> scope = userDetails.getAuthorities()
+				.stream()
+				.map(GrantedAuthority::getAuthority)
+				.collect(toCollection(TreeSet::new));
+			log.atInfo()
+				.addKeyValue("username", userDetails.getUsername())
+				.addKeyValue("scope", scope)
+				.addKeyValue("expires_at", expiresAt)
+				.log("""
+						msg="The token was issued successfully"
+						""".trim());
+			final JwtClaimsSet claims = JwtClaimsSet.builder()
+				.issuer(issuer)
+				.issuedAt(issuedAt)
+				.expiresAt(expiresAt)
+				.subject(subject)
+				.audience(List.of("note.ik.am"))
+				.claim("scope", scope)
+				.claim("preferred_username", userDetails.getUsername())
+				.build();
 			final Jwt jwt = this.jwtEncoder.encode(JwtEncoderParameters.from(claims));
-			return ResponseEntity
-					.ok(new OAuth2Token(jwt.getTokenValue(), TokenType.BEARER.getValue(),
-							Duration.between(issuedAt, expiresAt).getSeconds(), scope));
+			return ResponseEntity.ok(new OAuth2Token(jwt.getTokenValue(), TokenType.BEARER.getValue(),
+					Duration.between(issuedAt, expiresAt).getSeconds(), scope));
 		}
 		catch (AuthenticationException e) {
-			log.atWarn().addKeyValue("username", input.username())
-					.addKeyValue("reason", e.getMessage()).log("""
-							msg="Authentication failed"
-							""".trim());
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(new OAuth2Error("unauthorized", e.getMessage()));
+			log.atWarn().addKeyValue("username", input.username()).addKeyValue("reason", e.getMessage()).log("""
+					msg="Authentication failed"
+					""".trim());
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new OAuth2Error("unauthorized", e.getMessage()));
 		}
 	}
 
@@ -105,8 +110,7 @@ public class TokenController {
 	}
 
 	public record OAuth2Token(@NonNull @JsonProperty("access_token") String accessToken,
-			@NonNull @JsonProperty("token_type") String tokenType,
-			@NonNull @JsonProperty("expires_in") long expiresIn,
+			@NonNull @JsonProperty("token_type") String tokenType, @NonNull @JsonProperty("expires_in") long expiresIn,
 			@NonNull Set<String> scope) {
 
 	}
@@ -115,4 +119,5 @@ public class TokenController {
 			@NonNull @JsonProperty("error_description") String errorDescription) {
 
 	}
+
 }

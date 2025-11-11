@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public class ReaderUserDetails implements UserDetails {
+
 	private final Reader reader;
 
 	public ReaderUserDetails(Reader reader) {
@@ -51,4 +52,5 @@ public class ReaderUserDetails implements UserDetails {
 	public boolean isEnabled() {
 		return !this.reader.isDisabled();
 	}
+
 }

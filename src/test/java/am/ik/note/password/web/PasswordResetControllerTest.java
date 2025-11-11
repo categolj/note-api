@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = { PasswordResetController.class })
 @Import(SecurityConfig.class)
 class PasswordResetControllerTest {
+
 	@Autowired
 	MockMvc mockMvc;
 
@@ -49,70 +50,54 @@ class PasswordResetControllerTest {
 
 	@Test
 	void sendLink_200() throws Exception {
-		given(this.readerMapper.findByEmail("demo@example.com")).willReturn(Optional
-				.of(new Reader(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
-						"demo@example.com", "{noop}password", ReaderState.DISABLED)));
-		this.mockMvc
-				.perform(post("/password_reset/send_link")
-						.contentType(MediaType.APPLICATION_JSON).content("""
-								{"email":  "demo@example.com"}
-								"""))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.message").value("Sent a link."));
+		given(this.readerMapper.findByEmail("demo@example.com"))
+			.willReturn(Optional.of(new Reader(ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
+					"demo@example.com", "{noop}password", ReaderState.DISABLED)));
+		this.mockMvc.perform(post("/password_reset/send_link").contentType(MediaType.APPLICATION_JSON).content("""
+				{"email":  "demo@example.com"}
+				""")).andExpect(status().isOk()).andExpect(jsonPath("$.message").value("Sent a link."));
 	}
 
 	@Test
 	void sendLink_404() throws Exception {
-		given(this.readerMapper.findByEmail("demo@example.com"))
-				.willReturn(Optional.empty());
-		this.mockMvc.perform(post("/password_reset/send_link")
-				.contentType(MediaType.APPLICATION_JSON).content("""
-						{"email":  "demo@example.com"}
-						""")).andExpect(status().isNotFound());
+		given(this.readerMapper.findByEmail("demo@example.com")).willReturn(Optional.empty());
+		this.mockMvc.perform(post("/password_reset/send_link").contentType(MediaType.APPLICATION_JSON).content("""
+				{"email":  "demo@example.com"}
+				""")).andExpect(status().isNotFound());
 	}
 
 	@Test
 	void reset_200() throws Exception {
 		final PasswordResetId resetId = PasswordResetId.random();
-		given(this.passwordResetMapper.findByResetId(resetId))
-				.willReturn(Optional.of(new PasswordReset(resetId,
-						ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
-						OffsetDateTime.now())));
-		this.mockMvc
-				.perform(post("/password_reset").contentType(MediaType.APPLICATION_JSON)
-						.content("""
-								{"resetId": "%s", "newPassword":  "password"}
-								""".formatted(resetId)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.message").value("Reset the password"));
+		given(this.passwordResetMapper.findByResetId(resetId)).willReturn(Optional.of(new PasswordReset(resetId,
+				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime.now())));
+		this.mockMvc.perform(post("/password_reset").contentType(MediaType.APPLICATION_JSON).content("""
+				{"resetId": "%s", "newPassword":  "password"}
+				""".formatted(resetId)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Reset the password"));
 	}
 
 	@Test
 	void reset_400() throws Exception {
 		final PasswordResetId resetId = PasswordResetId.random();
-		given(this.passwordResetMapper.findByResetId(resetId))
-				.willReturn(Optional.of(new PasswordReset(resetId,
-						ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"),
-						OffsetDateTime.now())));
-		given(this.passwordResetService.reset(any(), any()))
-				.willThrow(new PasswordResetExpiredException());
-		this.mockMvc
-				.perform(post("/password_reset").contentType(MediaType.APPLICATION_JSON)
-						.content("""
-								{"resetId": "%s", "newPassword":  "password"}
-								""".formatted(resetId)))
-				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.message")
-						.value("The given link has been already expired."));
+		given(this.passwordResetMapper.findByResetId(resetId)).willReturn(Optional.of(new PasswordReset(resetId,
+				ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4"), OffsetDateTime.now())));
+		given(this.passwordResetService.reset(any(), any())).willThrow(new PasswordResetExpiredException());
+		this.mockMvc.perform(post("/password_reset").contentType(MediaType.APPLICATION_JSON).content("""
+				{"resetId": "%s", "newPassword":  "password"}
+				""".formatted(resetId)))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("The given link has been already expired."));
 	}
 
 	@Test
 	void reset_404() throws Exception {
 		final PasswordResetId resetId = PasswordResetId.random();
-		given(this.passwordResetMapper.findByResetId(resetId))
-				.willReturn(Optional.empty());
-		this.mockMvc.perform(post("/password_reset")
-				.contentType(MediaType.APPLICATION_JSON).content("""
-						{"resetId": "%s", "newPassword":  "password"}
-						""".formatted(resetId))).andExpect(status().isNotFound());
+		given(this.passwordResetMapper.findByResetId(resetId)).willReturn(Optional.empty());
+		this.mockMvc.perform(post("/password_reset").contentType(MediaType.APPLICATION_JSON).content("""
+				{"resetId": "%s", "newPassword":  "password"}
+				""".formatted(resetId))).andExpect(status().isNotFound());
 	}
+
 }

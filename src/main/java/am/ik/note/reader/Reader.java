@@ -6,9 +6,7 @@ import org.jilt.Builder;
 import org.jilt.BuilderStyle;
 
 @Builder(style = BuilderStyle.STAGED)
-public record Reader(@JsonUnwrapped ReaderId readerId, String email,
-					 String hashedPassword,
-					 ReaderState readerState) {
+public record Reader(@JsonUnwrapped ReaderId readerId, String email, String hashedPassword, ReaderState readerState) {
 
 	@Override
 	@JsonIgnore

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class NoteReaderMapper {
+
 	private final JdbcClient jdbcClient;
 
 	public NoteReaderMapper(JdbcTemplate jdbcTemplate) {
@@ -20,10 +21,11 @@ public class NoteReaderMapper {
 				FROM note_reader AS nr
 				WHERE nr.note_id = ?
 				  AND nr.reader_id = ?
-				""").param(noteId.toString()) //
-				.param(readerId.toString()) //
-				.query((rs, rowNum) -> rs.getLong("count")) //
-				.single();
+				""")
+			.param(noteId.toString()) //
+			.param(readerId.toString()) //
+			.query((rs, rowNum) -> rs.getLong("count")) //
+			.single();
 		return count.intValue();
 	}
 
@@ -32,9 +34,9 @@ public class NoteReaderMapper {
 		return this.jdbcClient.sql("""
 				INSERT INTO note_reader(note_id, reader_id) VALUES (?, ?)
 				""") //
-				.param(noteId.toString()) //
-				.param(readerId.toString()) //
-				.update();
+			.param(noteId.toString()) //
+			.param(readerId.toString()) //
+			.update();
 	}
 
 }

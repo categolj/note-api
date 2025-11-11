@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Component
 public class SendGridSender {
+
 	private final Logger log = LoggerFactory.getLogger(SendGridSender.class);
 
 	private final SendGridAPI sendGrid;
@@ -53,4 +54,5 @@ public class SendGridSender {
 			throw new UncheckedIOException(e);
 		}
 	}
+
 }

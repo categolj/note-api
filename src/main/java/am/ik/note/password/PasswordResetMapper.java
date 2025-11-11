@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class PasswordResetMapper {
+
 	private final JdbcTemplate jdbcTemplate;
 
 	public PasswordResetMapper(JdbcTemplate jdbcTemplate) {
@@ -19,17 +20,14 @@ public class PasswordResetMapper {
 	}
 
 	public Optional<PasswordReset> findByResetId(PasswordResetId resetId) {
-		return DataAccessUtils
-				.optionalResult(this.jdbcTemplate.query(
-						"""
-								SELECT reset_id, reader_id, created_at
-								FROM password_reset
-								WHERE reset_id = ?
-								""", (rs,
-								i) -> new PasswordReset(resetId,
-										ReaderId.valueOf(rs.getString("reader_id")),
-										rs.getTimestamp("created_at").toInstant()
-												.atOffset(ZoneOffset.UTC)),
+		return DataAccessUtils.optionalResult(
+				this.jdbcTemplate.query("""
+						SELECT reset_id, reader_id, created_at
+						FROM password_reset
+						WHERE reset_id = ?
+						""",
+						(rs, i) -> new PasswordReset(resetId, ReaderId.valueOf(rs.getString("reader_id")),
+								rs.getTimestamp("created_at").toInstant().atOffset(ZoneOffset.UTC)),
 						resetId.toString()));
 	}
 
@@ -46,4 +44,5 @@ public class PasswordResetMapper {
 				DELETE FROM password_reset WHERE reset_id = ?
 				""", resetId.toString());
 	}
+
 }

@@ -8,9 +8,8 @@ import am.ik.note.reader.ReaderId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
-public record ActivationLink(@JsonUnwrapped ActivationLinkId activationId,
-							 ReaderId readerId,
-							 OffsetDateTime createdAt) {
+public record ActivationLink(@JsonUnwrapped ActivationLinkId activationId, ReaderId readerId,
+		OffsetDateTime createdAt) {
 
 	public OffsetDateTime expiry() {
 		return this.createdAt.plusDays(3);

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class ReaderPasswordMapper {
+
 	private final JdbcClient jdbcClient;
 
 	public ReaderPasswordMapper(JdbcTemplate jdbcTemplate) {
@@ -18,9 +19,9 @@ public class ReaderPasswordMapper {
 		return this.jdbcClient.sql("""
 				INSERT INTO reader_password(reader_id, hashed_password) VALUES (?, ?)
 				""") //
-				.param(readerPassword.readerId().toString()) //
-				.param(readerPassword.hashedPassword()) //
-				.update();
+			.param(readerPassword.readerId().toString()) //
+			.param(readerPassword.hashedPassword()) //
+			.update();
 	}
 
 	@Transactional
@@ -28,7 +29,8 @@ public class ReaderPasswordMapper {
 		return this.jdbcClient.sql("""
 				DELETE FROM reader_password WHERE reader_id = ?
 				""") //
-				.param(readerId.toString()) //
-				.update();
+			.param(readerId.toString()) //
+			.update();
 	}
+
 }

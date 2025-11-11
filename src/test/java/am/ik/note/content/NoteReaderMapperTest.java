@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({ NoteMapper.class, NoteReaderMapper.class, ReaderMapper.class })
 @Testcontainers(disabledWithoutDocker = true)
 class NoteReaderMapperTest {
+
 	@Container
 	@ServiceConnection
-	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-			"postgres:14-alpine");
+	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14-alpine");
 
 	@Autowired
 	NoteMapper noteMapper;
@@ -42,8 +42,7 @@ class NoteReaderMapperTest {
 		this.noteMapper.insertNote(noteId, 101L, "https://example.com/note1");
 		this.readerMapper.insert(readerId, "reader1@example.com");
 		this.noteReaderMapper.insertNoteReader(noteId, readerId);
-		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId,
-				readerId);
+		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId);
 		assertThat(count).isEqualTo(1);
 	}
 
@@ -53,8 +52,8 @@ class NoteReaderMapperTest {
 		final ReaderId readerId = ReaderId.random();
 		this.noteMapper.insertNote(noteId, 101L, "https://example.com/note1");
 		this.readerMapper.insert(readerId, "reader1@example.com");
-		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId,
-				readerId);
+		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId);
 		assertThat(count).isEqualTo(0);
 	}
+
 }

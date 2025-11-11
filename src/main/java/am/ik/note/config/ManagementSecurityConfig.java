@@ -14,20 +14,18 @@ public class ManagementSecurityConfig {
 
 	@Bean
 	@Order(1)
-	public SecurityFilterChain managementSecurityFilterChain(HttpSecurity http)
-			throws Exception {
+	public SecurityFilterChain managementSecurityFilterChain(HttpSecurity http) throws Exception {
 		return http.securityMatcher(EndpointRequest.toAnyEndpoint())
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll())
-				.build();
+			.authorizeHttpRequests(auth -> auth.requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll())
+			.build();
 	}
 
 	@Bean
 	@Order(1)
-	public SecurityFilterChain additionalManagementSecurityFilterChain(HttpSecurity http)
-			throws Exception {
-		return http.securityMatcher("/readyz", "/livez").authorizeHttpRequests(
-				auth -> auth.requestMatchers(GET, "/readyz", "/livez").permitAll())
-				.build();
+	public SecurityFilterChain additionalManagementSecurityFilterChain(HttpSecurity http) throws Exception {
+		return http.securityMatcher("/readyz", "/livez")
+			.authorizeHttpRequests(auth -> auth.requestMatchers(GET, "/readyz", "/livez").permitAll())
+			.build();
 	}
+
 }

@@ -1,6 +1,7 @@
 package am.ik.note.content;
 
 public class NoteNotSubscribedException extends RuntimeException {
+
 	private String noteUrl;
 
 	public NoteNotSubscribedException(String message, String noteUrl) {
@@ -11,4 +12,5 @@ public class NoteNotSubscribedException extends RuntimeException {
 	public String getNoteUrl() {
 		return noteUrl;
 	}
+
 }

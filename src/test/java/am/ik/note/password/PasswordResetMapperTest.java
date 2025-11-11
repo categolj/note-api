@@ -24,10 +24,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({ ReaderMapper.class, PasswordResetMapper.class })
 @Testcontainers(disabledWithoutDocker = true)
 class PasswordResetMapperTest {
+
 	@Container
 	@ServiceConnection
-	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-			"postgres:14-alpine");
+	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14-alpine");
 
 	@Autowired
 	PasswordResetMapper passwordResetMapper;
@@ -37,20 +37,17 @@ class PasswordResetMapperTest {
 
 	@BeforeEach
 	void setup() {
-		final ReaderId readerId = ReaderId
-				.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
+		final ReaderId readerId = ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
 		this.readerMapper.insert(readerId, "demo@example.com");
 	}
 
 	@Test
 	void insertAndFind() {
 		final PasswordResetId resetId = PasswordResetId.random();
-		final ReaderId readerId = ReaderId
-				.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
+		final ReaderId readerId = ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
 		final int count = this.passwordResetMapper.insert(resetId, readerId);
 		assertThat(count).isEqualTo(1);
-		final PasswordReset passwordReset = this.passwordResetMapper
-				.findByResetId(resetId).orElseThrow();
+		final PasswordReset passwordReset = this.passwordResetMapper.findByResetId(resetId).orElseThrow();
 		assertThat(passwordReset.resetId()).isEqualTo(resetId);
 		assertThat(passwordReset.readerId()).isEqualTo(readerId);
 	}
@@ -58,14 +55,13 @@ class PasswordResetMapperTest {
 	@Test
 	void insertAndDeleteAndFind() {
 		final PasswordResetId resetId = PasswordResetId.random();
-		final ReaderId readerId = ReaderId
-				.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
+		final ReaderId readerId = ReaderId.valueOf("c872edeb-1d86-4c1a-81ac-895ace606ec4");
 		final int count = this.passwordResetMapper.insert(resetId, readerId);
 		assertThat(count).isEqualTo(1);
 		final int deleted = this.passwordResetMapper.deleteByResetId(resetId);
 		assertThat(deleted).isEqualTo(1);
-		final Optional<PasswordReset> passwordReset = this.passwordResetMapper
-				.findByResetId(resetId);
+		final Optional<PasswordReset> passwordReset = this.passwordResetMapper.findByResetId(resetId);
 		assertThat(passwordReset.isEmpty()).isTrue();
 	}
+
 }

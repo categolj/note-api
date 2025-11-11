@@ -16,14 +16,14 @@ import static java.util.stream.Collectors.toUnmodifiableMap;
 
 @Service
 public class NoteService {
+
 	private final NoteMapper noteMapper;
 
 	private final NoteReaderMapper noteReaderMapper;
 
 	private final EntryClient entryClient;
 
-	public NoteService(NoteMapper noteMapper, NoteReaderMapper noteReaderMapper,
-			EntryClient entryClient) {
+	public NoteService(NoteMapper noteMapper, NoteReaderMapper noteReaderMapper, EntryClient entryClient) {
 		this.noteMapper = noteMapper;
 		this.noteReaderMapper = noteReaderMapper;
 		this.entryClient = entryClient;
@@ -35,46 +35,42 @@ public class NoteService {
 		if (summaries.isEmpty()) {
 			return List.of();
 		}
-		final Map<Long, Entry> entryMap = this.entryClient.getEntries().content().stream()
-				.collect(toUnmodifiableMap(Entry::entryId, Function.identity()));
+		final Map<Long, Entry> entryMap = this.entryClient.getEntries()
+			.content()
+			.stream()
+			.collect(toUnmodifiableMap(Entry::entryId, Function.identity()));
 		return summaries.stream().map(b -> {
 			final Entry entry = entryMap.get(b.getEntryId());
 			if (entry == null) {
 				return b.build();
 			}
-			return b.withTitle(entry.frontMatter().title())
-					.withUpdatedDate(entry.updated().date()).build();
+			return b.withTitle(entry.frontMatter().title()).withUpdatedDate(entry.updated().date()).build();
 		}).toList();
 	}
 
 	@Transactional(readOnly = true)
 	public Optional<NoteDetails> findByEntryId(Long entryId, ReaderId readerId) {
-		return this.noteMapper.findByEntryId(entryId)
-				.map(note -> this.toDetails(note, readerId));
+		return this.noteMapper.findByEntryId(entryId).map(note -> this.toDetails(note, readerId));
 	}
 
 	@Transactional(readOnly = true)
 	public Optional<NoteDetails> findByNoteId(NoteId noteId, ReaderId readerId) {
-		return this.noteMapper.findByNoteId(noteId)
-				.map(note -> this.toDetails(note, readerId));
+		return this.noteMapper.findByNoteId(noteId).map(note -> this.toDetails(note, readerId));
 	}
 
 	private NoteDetails toDetails(Note note, ReaderId readerId) {
-		int count = this.noteReaderMapper.countByNoteIdAndReaderId(note.noteId(),
-				readerId);
+		int count = this.noteReaderMapper.countByNoteIdAndReaderId(note.noteId(), readerId);
 		if (count <= 0) {
-			throw new NoteNotSubscribedException(
-					"You are not allowed to access to the entry.", note.noteUrl());
+			throw new NoteNotSubscribedException("You are not allowed to access to the entry.", note.noteUrl());
 		}
 		final Entry entry = this.entryClient.getEntry(note.entryId());
-		return new NoteDetails(note.noteId(), note.entryId(), entry.content(),
-				entry.frontMatter(), note.noteUrl(), entry.created(), entry.updated());
+		return new NoteDetails(note.noteId(), note.entryId(), entry.content(), entry.frontMatter(), note.noteUrl(),
+				entry.created(), entry.updated());
 	}
 
 	@Transactional
 	public SubscriptionStatus subscribe(NoteId noteId, ReaderId readerId) {
-		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId,
-				readerId);
+		final int count = this.noteReaderMapper.countByNoteIdAndReaderId(noteId, readerId);
 		if (count > 0) {
 			return SubscriptionStatus.EXISTING;
 		}
@@ -84,11 +80,13 @@ public class NoteService {
 	}
 
 	public enum SubscriptionStatus {
+
 		EXISTING, NEW;
 
 		public boolean isAlreadySubscribed() {
 			return this == EXISTING;
 		}
+
 	}
 
 }

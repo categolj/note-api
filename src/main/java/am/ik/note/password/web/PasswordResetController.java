@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/password_reset")
 @Tag(name = "password-reset")
 public class PasswordResetController {
+
 	private final PasswordResetService passwordResetService;
 
 	private final PasswordResetMapper passwordResetMapper;
@@ -33,9 +34,8 @@ public class PasswordResetController {
 
 	private final IdGenerator idGenerator;
 
-	public PasswordResetController(PasswordResetService passwordResetService,
-			PasswordResetMapper passwordResetMapper, ReaderMapper readerMapper,
-			IdGenerator idGenerator) {
+	public PasswordResetController(PasswordResetService passwordResetService, PasswordResetMapper passwordResetMapper,
+			ReaderMapper readerMapper, IdGenerator idGenerator) {
 		this.passwordResetService = passwordResetService;
 		this.passwordResetMapper = passwordResetMapper;
 		this.readerMapper = readerMapper;
@@ -47,25 +47,21 @@ public class PasswordResetController {
 	public ResponseEntity<ResponseMessage> sendLink(@RequestBody SendLinkInput input) {
 		final String email = input.email();
 		return ResponseEntity.of(this.readerMapper.findByEmail(email)
-				.map(reader -> new PasswordReset(
-						new PasswordResetId(idGenerator.generateId()), reader.readerId(),
-						OffsetDateTime.now()))
-				.map(this.passwordResetService::sendLink)
-				.map(count -> new ResponseMessage("Sent a link.")));
+			.map(reader -> new PasswordReset(new PasswordResetId(idGenerator.generateId()), reader.readerId(),
+					OffsetDateTime.now()))
+			.map(this.passwordResetService::sendLink)
+			.map(count -> new ResponseMessage("Sent a link.")));
 	}
 
 	@PostMapping(path = "")
 	public ResponseEntity<ResponseMessage> reset(@RequestBody PasswordResetInput input) {
 		try {
-			return ResponseEntity
-					.of(this.passwordResetMapper.findByResetId(input.toPasswordResetId())
-							.map(passwordReset -> this.passwordResetService
-									.reset(passwordReset, input.newPassword()))
-							.map(count -> new ResponseMessage("Reset the password")));
+			return ResponseEntity.of(this.passwordResetMapper.findByResetId(input.toPasswordResetId())
+				.map(passwordReset -> this.passwordResetService.reset(passwordReset, input.newPassword()))
+				.map(count -> new ResponseMessage("Reset the password")));
 		}
 		catch (PasswordResetExpiredException e) {
-			return ResponseEntity.badRequest().body(
-					new ResponseMessage("The given link has been already expired."));
+			return ResponseEntity.badRequest().body(new ResponseMessage("The given link has been already expired."));
 		}
 	}
 
@@ -78,4 +74,5 @@ public class PasswordResetController {
 			return new PasswordResetId(resetId);
 		}
 	}
+
 }

@@ -22,4 +22,5 @@ public class SanitizingFunctionImpl implements SanitizingFunction {
 		}
 		return data;
 	}
+
 }

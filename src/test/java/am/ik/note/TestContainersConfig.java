@@ -8,9 +8,11 @@ import org.springframework.context.annotation.Bean;
 
 @TestConfiguration
 public class TestContainersConfig {
+
 	@Bean
 	@ServiceConnection
 	public PostgreSQLContainer<?> postgresContainer() {
 		return new PostgreSQLContainer<>("postgres:14-alpine");
 	}
+
 }

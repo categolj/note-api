@@ -6,6 +6,7 @@ import org.springframework.modulith.core.ApplicationModules;
 import org.springframework.modulith.docs.Documenter;
 
 public class ModularityTest {
+
 	ApplicationModules modules = ApplicationModules.of(NoteApiApplication.class);
 
 	@Test
@@ -15,7 +16,7 @@ public class ModularityTest {
 
 	@Test
 	void writeDocumentationSnippets() {
-		new Documenter(modules).writeModulesAsPlantUml()
-				.writeIndividualModulesAsPlantUml();
+		new Documenter(modules).writeModulesAsPlantUml().writeIndividualModulesAsPlantUml();
 	}
+
 }

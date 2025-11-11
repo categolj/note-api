@@ -3,6 +3,7 @@ package am.ik.note.content;
 import java.time.OffsetDateTime;
 
 public class NoteSummaryBuilder {
+
 	private NoteId noteId;
 
 	private Long entryId;
@@ -50,7 +51,7 @@ public class NoteSummaryBuilder {
 	}
 
 	public NoteSummary build() {
-		return new NoteSummary(this.noteId, this.entryId, this.title, this.noteUrl,
-				this.subscribed, this.updatedDate);
+		return new NoteSummary(this.noteId, this.entryId, this.title, this.noteUrl, this.subscribed, this.updatedDate);
 	}
+
 }
