@@ -1,8 +1,5 @@
 package am.ik.note.content.web;
 
-import java.util.List;
-import java.util.UUID;
-
 import am.ik.note.common.ErrorResponse;
 import am.ik.note.common.ResponseMessage;
 import am.ik.note.content.NoteDetails;
@@ -13,12 +10,8 @@ import am.ik.note.content.NoteService;
 import am.ik.note.content.NoteService.SubscriptionStatus;
 import am.ik.note.content.NoteSummary;
 import am.ik.note.reader.ReaderId;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
+import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -36,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/notes")
-@Tag(name = "note")
 public class NoteController {
 
 	private final NoteService noteService;
@@ -55,11 +47,6 @@ public class NoteController {
 	}
 
 	@GetMapping(path = "/{entryId:[0-9]+}")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200",
-					content = @Content(schema = @Schema(implementation = NoteDetails.class))),
-			@ApiResponse(responseCode = "403",
-					content = @Content(schema = @Schema(implementation = ErrorResponse.class))) })
 	public ResponseEntity<?> getNoteByEntryId(@PathVariable("entryId") Long entryId, @AuthenticationPrincipal Jwt jwt) {
 		try {
 			final ReaderId readerId = ReaderId.valueOf(jwt.getSubject());
@@ -71,11 +58,6 @@ public class NoteController {
 	}
 
 	@GetMapping(path = "/{noteId:[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}}")
-	@ApiResponses({
-			@ApiResponse(responseCode = "200",
-					content = @Content(schema = @Schema(implementation = NoteDetails.class))),
-			@ApiResponse(responseCode = "403",
-					content = @Content(schema = @Schema(implementation = ErrorResponse.class))) })
 	public ResponseEntity<?> getNoteByNoteId(@PathVariable("noteId") NoteId noteId, @AuthenticationPrincipal Jwt jwt) {
 		try {
 			final ReaderId readerId = ReaderId.valueOf(jwt.getSubject());

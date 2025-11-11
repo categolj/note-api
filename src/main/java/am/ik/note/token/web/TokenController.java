@@ -1,5 +1,7 @@
 package am.ik.note.token.web;
 
+import am.ik.note.reader.ReaderUserDetails;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -7,17 +9,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import am.ik.note.reader.ReaderUserDetails;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +33,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import static java.util.stream.Collectors.toCollection;
 
 @RestController
-@Tag(name = "token")
 public class TokenController {
 
 	private final AuthenticationManager authenticationManager;
@@ -58,11 +50,6 @@ public class TokenController {
 	}
 
 	@PostMapping(path = "oauth/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	@ApiResponses({
-			@ApiResponse(responseCode = "200",
-					content = @Content(schema = @Schema(implementation = OAuth2Token.class))),
-			@ApiResponse(responseCode = "401",
-					content = @Content(schema = @Schema(implementation = OAuth2Error.class))) })
 	public ResponseEntity<?> token(TokenInput input, UriComponentsBuilder builder) {
 		final Authentication authentication = new UsernamePasswordAuthenticationToken(input.username(),
 				input.password());

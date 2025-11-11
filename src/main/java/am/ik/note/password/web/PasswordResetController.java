@@ -1,9 +1,5 @@
 package am.ik.note.password.web;
 
-import java.time.OffsetDateTime;
-import java.util.Map;
-import java.util.UUID;
-
 import am.ik.note.common.ResponseMessage;
 import am.ik.note.password.PasswordReset;
 import am.ik.note.password.PasswordResetExpiredException;
@@ -11,8 +7,8 @@ import am.ik.note.password.PasswordResetId;
 import am.ik.note.password.PasswordResetMapper;
 import am.ik.note.password.PasswordResetService;
 import am.ik.note.reader.ReaderMapper;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.IdGenerator;
@@ -23,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/password_reset")
-@Tag(name = "password-reset")
 public class PasswordResetController {
 
 	private final PasswordResetService passwordResetService;
