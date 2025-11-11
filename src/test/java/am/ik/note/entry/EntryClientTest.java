@@ -2,9 +2,10 @@ package am.ik.note.entry;
 
 import am.ik.note.config.EntryClientConfig;
 import am.ik.spring.logbook.AccessLoggerLogbookAutoConfiguration;
+import java.net.SocketTimeoutException;
+import java.time.OffsetDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.zalando.logbook.autoconfigure.LogbookAutoConfiguration;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -15,15 +16,19 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
-
-import java.net.SocketTimeoutException;
-import java.time.OffsetDateTime;
-import java.util.List;
+import org.zalando.logbook.autoconfigure.LogbookAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadGateway;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withException;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withGatewayTimeout;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withResourceNotFound;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServiceUnavailable;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withTooManyRequests;
 
 @RestClientTest(properties = { "logging.level.web=INFO", "entry.retry-interval=5ms",
 		"entry.retry-max-elapsed-time=40ms", "entry.api-url=https://example.com" })
@@ -40,7 +45,7 @@ class EntryClientTest {
 
 	@Test
 	void getEntries() {
-		this.server.expect(requestTo("/entries")).andRespond(withSuccess("""
+		this.server.expect(requestTo("https://example.com/entries")).andRespond(withSuccess("""
 				{
 				  "content": [
 				    {
@@ -205,7 +210,7 @@ class EntryClientTest {
 
 	@Test
 	void getEntry() {
-		this.server.expect(requestTo("/entries/751"))
+		this.server.expect(requestTo("https://example.com/entries/751"))
 			.andRespond(withSuccess(
 					"""
 							{
@@ -261,11 +266,11 @@ class EntryClientTest {
 
 	@Test
 	void getEntryRetryWithSuccess() {
-		this.server.expect(requestTo("/entries/751")).andRespond(withServerError());
-		this.server.expect(requestTo("/entries/751")).andRespond(withBadGateway());
-		this.server.expect(requestTo("/entries/751")).andRespond(withServiceUnavailable());
-		this.server.expect(requestTo("/entries/751")).andRespond(withGatewayTimeout());
-		this.server.expect(requestTo("/entries/751")).andRespond(withSuccess("""
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withServerError());
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withBadGateway());
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withServiceUnavailable());
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withGatewayTimeout());
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withSuccess("""
 				{"entryId": 751}
 				""", MediaType.APPLICATION_JSON));
 		Entry entry = this.entryClient.getEntry(751L);
@@ -275,9 +280,9 @@ class EntryClientTest {
 
 	@Test
 	void getEntryRetryTimeoutWithSuccess() {
-		this.server.expect(ExpectedCount.times(4), requestTo("/entries/751"))
+		this.server.expect(ExpectedCount.times(4), requestTo("https://example.com/entries/751"))
 			.andRespond(withException(new SocketTimeoutException("timeout")));
-		this.server.expect(requestTo("/entries/751")).andRespond(withSuccess("""
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withSuccess("""
 				{"entryId": 751}
 				""", MediaType.APPLICATION_JSON));
 		Entry entry = this.entryClient.getEntry(751L);
@@ -287,12 +292,13 @@ class EntryClientTest {
 
 	@Test
 	void getEntryRetryWithFailure() {
-		this.server.expect(requestTo("/entries/751")).andRespond(withServerError());
-		this.server.expect(requestTo("/entries/751")).andRespond(withBadGateway());
-		this.server.expect(requestTo("/entries/751")).andRespond(withServiceUnavailable());
-		this.server.expect(requestTo("/entries/751")).andRespond(withGatewayTimeout());
-		this.server.expect(requestTo("/entries/751")).andRespond(withTooManyRequests().body("rate limit exceeded!"));
-		this.server.expect(requestTo("/entries/751")).andRespond(withSuccess("""
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withServerError());
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withBadGateway());
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withServiceUnavailable());
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withGatewayTimeout());
+		this.server.expect(requestTo("https://example.com/entries/751"))
+			.andRespond(withTooManyRequests().body("rate limit exceeded!"));
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withSuccess("""
 				{"entryId": 751}
 				""", MediaType.APPLICATION_JSON));
 		assertThatThrownBy(() -> {
@@ -302,9 +308,9 @@ class EntryClientTest {
 
 	@Test
 	void getEntryRetryTimeoutWithFailure() {
-		this.server.expect(ExpectedCount.times(5), requestTo("/entries/751"))
+		this.server.expect(ExpectedCount.times(5), requestTo("https://example.com/entries/751"))
 			.andRespond(withException(new SocketTimeoutException("timeout")));
-		this.server.expect(requestTo("/entries/751")).andRespond(withSuccess("""
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withSuccess("""
 				{"entryId": 751}
 				""", MediaType.APPLICATION_JSON));
 		assertThatThrownBy(() -> {
@@ -315,13 +321,13 @@ class EntryClientTest {
 
 	@Test
 	void getEntryNotFound() {
-		this.server.expect(requestTo("/entries/751")).andRespond(withResourceNotFound().body("""
+		this.server.expect(requestTo("https://example.com/entries/751")).andRespond(withResourceNotFound().body("""
 				{
 				  "type": "about:blank",
 				  "title": "Not Found",
 				  "status": 404,
 				  "detail": "The requested entry is not found (entryId = 751)",
-				  "instance": "/entries/751",
+				  "instance": "https://example.com/entries/751",
 				  "traceId": "047d8e5de270c875a6e28eb79bf9177f"
 				}
 				"""));

@@ -1,11 +1,8 @@
 package am.ik.note;
 
-import com.sendgrid.SendGrid;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.client.reactive.JdkClientHttpConnector;
@@ -28,9 +25,6 @@ public class ActuatorIntegrationTest {
 	int port;
 
 	WebTestClient webTestClient;
-
-	@MockBean
-	SendGrid sendGrid;
 
 	public ActuatorIntegrationTest() {
 		this.webTestClient = WebTestClient.bindToServer(new JdkClientHttpConnector()).build();

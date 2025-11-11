@@ -1,21 +1,15 @@
 package am.ik.note.sendgrid;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-
-import com.sendgrid.Method;
-import com.sendgrid.Request;
-import com.sendgrid.Response;
-import com.sendgrid.SendGridAPI;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
 import io.micrometer.observation.annotation.Observed;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
@@ -23,35 +17,34 @@ public class SendGridSender {
 
 	private final Logger log = LoggerFactory.getLogger(SendGridSender.class);
 
-	private final SendGridAPI sendGrid;
+	private final RestClient restClient;
 
-	public SendGridSender(SendGridAPI sendGrid) {
-		this.sendGrid = sendGrid;
+	public SendGridSender(RestClient.Builder restClientBuilder, SendGridProps props) {
+		this.restClient = restClientBuilder.baseUrl(props.baseUrl())
+			.defaultHeaders(headers -> headers.setBearerAuth(props.apiKey()))
+			.defaultStatusHandler(__ -> true, (req, res) -> {
+			})
+			.build();
 	}
 
 	@Observed
 	public void sendMail(String to, String subject, String content) {
 		log.info("Sending mail to {} subject {}", to, subject);
-		try {
-			Mail mail = new Mail(new Email("noreply@ik.am"), subject, new Email(to),
-					new Content("text/plain", content));
-			mail.setReplyTo(new Email("makingx+hajiboot3@gmail.com"));
-
-			Request request = new Request();
-			request.setMethod(Method.POST);
-			request.setEndpoint("mail/send");
-			request.setBody(mail.build());
-			Response response = this.sendGrid.api(request);
-			if (response.getStatusCode() != 202) {
-				log.warn("statusCode = {}", response.getStatusCode());
-				log.warn("headers = {}", response.getHeaders());
-				log.warn("body = {}", response.getBody());
-				throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-						"Sending a mail failed ... Please register again later.");
-			}
-		}
-		catch (IOException e) {
-			throw new UncheckedIOException(e);
+		ResponseEntity<String> response = this.restClient.post()
+			.uri("/v3/mail/send")
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("personalizations", List.of(Map.of("to", List.of(Map.of("email", to)), "subject", subject)), //
+					"from", Map.of("email", "noreply@ik.am"), //
+					"reply_to", Map.of("email", "makingx+hajiboot3@gmail.com"), //
+					"content", List.of(Map.of("type", "text/plain", "value", content))))
+			.retrieve()
+			.toEntity(String.class);
+		if (!response.getStatusCode().is2xxSuccessful()) {
+			log.warn("statusCode = {}", response.getStatusCode());
+			log.warn("headers = {}", response.getHeaders());
+			log.warn("body = {}", response.getBody());
+			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+					"Failed to send a mail: " + response.getBody());
 		}
 	}
 
