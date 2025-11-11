@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.0-RC2</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   <groupId>am.ik.note</groupId>
@@ -16,7 +16,7 @@
   <description>note-api</description>
   <properties>
     <java.version>17</java.version>
-    <spring-modulith.version>2.0.0-RC1</spring-modulith.version>
+    <spring-modulith.version>2.0.0-SNAPSHOT</spring-modulith.version>
   </properties>
   <dependencies>
     <dependency>
@@ -297,4 +297,24 @@
       </plugin>
     </plugins>
   </build>
+  <repositories>
+    <repository>
+      <id>spring-snapshots</id>
+      <name>Spring Snapshots</name>
+      <url>https://repo.spring.io/snapshot</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>spring-snapshots</id>
+      <name>Spring Snapshots</name>
+      <url>https://repo.spring.io/snapshot</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
 </project>
