@@ -1,0 +1,245 @@
+package am.ik.note.config;
+
+import java.net.URI;
+import java.time.Duration;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
+import org.slf4j.spi.LoggingEventBuilder;
+import org.springframework.boot.actuate.web.exchanges.HttpExchange;
+import org.springframework.boot.actuate.web.exchanges.HttpExchange.Principal;
+import org.springframework.boot.actuate.web.exchanges.HttpExchange.Request;
+import org.springframework.boot.actuate.web.exchanges.HttpExchange.Response;
+import org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository;
+import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
+
+class AccessLogger implements HttpExchangeRepository {
+
+	private final Predicate<HttpExchange> filter;
+
+	@Nullable
+	private final BiConsumer<StringBuilder, HttpExchange> logCustomizer;
+
+	private final Level level;
+
+	private final boolean addKeyValues;
+
+	private final boolean emptyLogMessage;
+
+	@Nullable
+	private final BiFunction<LoggingEventBuilder, HttpExchange, LoggingEventBuilder> loggingEventCustomizer;
+
+	private final Logger log;
+
+	public AccessLogger(@Nullable Predicate<HttpExchange> filter,
+			@Nullable BiConsumer<StringBuilder, HttpExchange> logCustomizer, @Nullable String loggerName,
+			@Nullable Level level, boolean addKeyValues, boolean emptyLogMessage,
+			@Nullable BiFunction<LoggingEventBuilder, HttpExchange, LoggingEventBuilder> loggingEventCustomizer) {
+		if (emptyLogMessage && !addKeyValues) {
+			throw new IllegalArgumentException("'emptyLogMessage' can be true only when 'addKeyValues' is true.");
+		}
+		this.filter = Objects.requireNonNullElseGet(filter, () -> __ -> true);
+		this.logCustomizer = logCustomizer;
+		this.log = LoggerFactory.getLogger(Objects.requireNonNullElse(loggerName, "accesslog"));
+		this.level = Objects.requireNonNullElse(level, Level.INFO);
+		this.addKeyValues = addKeyValues;
+		this.emptyLogMessage = emptyLogMessage;
+		this.loggingEventCustomizer = loggingEventCustomizer;
+	}
+
+	public AccessLogger(@Nullable Predicate<HttpExchange> filter) {
+		this(filter, null, null, null, false, false, null);
+	}
+
+	public AccessLogger() {
+		this(null);
+	}
+
+	@Override
+	public List<HttpExchange> findAll() {
+		return List.of();
+	}
+
+	@Override
+	public void add(HttpExchange httpExchange) {
+		if (!log.isEnabledForLevel(this.level)) {
+			return;
+		}
+		final Request request = httpExchange.getRequest();
+		final URI uri = request.getUri();
+		if (!filter.test(httpExchange)) {
+			return;
+		}
+		final Response response = httpExchange.getResponse();
+		final Principal principal = httpExchange.getPrincipal();
+		final Duration timeTaken = httpExchange.getTimeTaken();
+		final Map<String, List<String>> headers = caseInsensitive(request.getHeaders());
+		final StringBuilder log = new StringBuilder();
+		final String remoteAddress = request.getRemoteAddress();
+		LoggingEventBuilder eventBuilder = this.log.atLevel(this.level);
+		if (!this.emptyLogMessage) {
+			log.append("kind=server ");
+			log.append("method=").append(request.getMethod()).append(" ");
+			log.append("url=\"").append(uri).append("\" ");
+			log.append("status=").append(response.getStatus()).append(" ");
+		}
+		if (this.addKeyValues) {
+			eventBuilder = eventBuilder.addKeyValue("kind", "server")
+				.addKeyValue("method", request.getMethod())
+				.addKeyValue("url", uri)
+				.addKeyValue("status", response.getStatus());
+		}
+		if (timeTaken != null) {
+			long duration = timeTaken.toMillis();
+			if (!this.emptyLogMessage) {
+				log.append("duration=").append(duration).append(" ");
+			}
+			if (this.addKeyValues) {
+				eventBuilder = eventBuilder.addKeyValue("duration", duration);
+			}
+		}
+		if (remoteAddress != null) {
+			if (!this.emptyLogMessage) {
+				log.append("remote=\"").append(remoteAddress).append("\" ");
+			}
+			if (this.addKeyValues) {
+				eventBuilder = eventBuilder.addKeyValue("remote", remoteAddress);
+			}
+		}
+		if (principal != null) {
+			String username = principal.getName();
+			if (!this.emptyLogMessage) {
+				log.append("username=\"").append(username).append("\" ");
+			}
+			if (this.addKeyValues) {
+				eventBuilder = eventBuilder.addKeyValue("username", username);
+			}
+		}
+
+		final List<String> userAgent = headers.get("user-agent");
+		if (!CollectionUtils.isEmpty(userAgent)) {
+			String userAgent0 = userAgent.get(0);
+			if (!this.emptyLogMessage) {
+				log.append("user_agent=\"").append(userAgent0).append("\" ");
+			}
+			if (this.addKeyValues) {
+				eventBuilder = eventBuilder.addKeyValue("user_agent", userAgent0);
+			}
+		}
+		final List<String> referer = headers.get("referer");
+		if (!CollectionUtils.isEmpty(referer)) {
+			String referer0 = referer.get(0);
+			if (!this.emptyLogMessage) {
+				log.append("referer=\"").append(referer0).append("\" ");
+			}
+			if (this.addKeyValues) {
+				eventBuilder = eventBuilder.addKeyValue("referer", referer0);
+			}
+		}
+		if (this.logCustomizer != null) {
+			this.logCustomizer.accept(log, httpExchange);
+		}
+		if (this.loggingEventCustomizer != null) {
+			eventBuilder = this.loggingEventCustomizer.apply(eventBuilder, httpExchange);
+		}
+		eventBuilder.log(log.toString().trim());
+	}
+
+	public static <T> Map<String, T> caseInsensitive(Map<String, T> map) {
+		return map.entrySet().stream().map(entry -> new Map.Entry<String, T>() {
+
+			@Override
+			public String getKey() {
+				return entry.getKey().toLowerCase(Locale.US);
+			}
+
+			@Override
+			public T getValue() {
+				return entry.getValue();
+			}
+
+			@Override
+			public T setValue(T value) {
+				return entry.setValue(value);
+			}
+		}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static class Builder {
+
+		@Nullable
+		private Predicate<HttpExchange> filter;
+
+		@Nullable
+		private BiConsumer<StringBuilder, HttpExchange> logCustomizer;
+
+		@Nullable
+		private String loggerName;
+
+		@Nullable
+		private Level level;
+
+		private boolean addKeyValues = false;
+
+		private boolean emptyLogMessage = false;
+
+		@Nullable
+		private BiFunction<LoggingEventBuilder, HttpExchange, LoggingEventBuilder> loggingEventCustomizer;
+
+		public Builder filter(@Nullable Predicate<HttpExchange> filter) {
+			this.filter = filter;
+			return this;
+		}
+
+		public Builder logCustomizer(@Nullable BiConsumer<StringBuilder, HttpExchange> logCustomizer) {
+			this.logCustomizer = logCustomizer;
+			return this;
+		}
+
+		public Builder loggerName(@Nullable String loggerName) {
+			this.loggerName = loggerName;
+			return this;
+		}
+
+		public Builder level(@Nullable Level level) {
+			this.level = level;
+			return this;
+		}
+
+		public Builder addKeyValues(boolean addKeyValues) {
+			this.addKeyValues = addKeyValues;
+			return this;
+		}
+
+		public Builder emptyLogMessage(boolean emptyLogMessage) {
+			this.emptyLogMessage = emptyLogMessage;
+			return this;
+		}
+
+		public Builder loggingEventCustomizer(
+				@Nullable BiFunction<LoggingEventBuilder, HttpExchange, LoggingEventBuilder> loggingEventCustomizer) {
+			this.loggingEventCustomizer = loggingEventCustomizer;
+			return this;
+		}
+
+		public AccessLogger build() {
+			return new AccessLogger(filter, logCustomizer, loggerName, level, addKeyValues, emptyLogMessage,
+					loggingEventCustomizer);
+		}
+
+	}
+
+}

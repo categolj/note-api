@@ -1,7 +1,6 @@
 package am.ik.note.entry;
 
 import am.ik.note.config.EntryClientConfig;
-import am.ik.spring.logbook.AccessLoggerLogbookAutoConfiguration;
 import java.net.SocketTimeoutException;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -16,7 +15,6 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
-import org.zalando.logbook.autoconfigure.LogbookAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,8 +30,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 @RestClientTest(properties = { "logging.level.web=INFO", "entry.retry-interval=5ms",
 		"entry.retry-max-elapsed-time=40ms", "entry.api-url=https://example.com" })
-@ImportAutoConfiguration({ JacksonAutoConfiguration.class, AccessLoggerLogbookAutoConfiguration.class,
-		LogbookAutoConfiguration.class })
+@ImportAutoConfiguration({ JacksonAutoConfiguration.class })
 @Import(EntryClientConfig.class)
 class EntryClientTest {
 

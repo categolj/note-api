@@ -11,19 +11,16 @@ import org.springframework.util.backoff.ExponentialBackOff;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
-import org.zalando.logbook.spring.LogbookClientHttpRequestInterceptor;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(EntryProps.class)
 public class EntryClientConfig {
 
 	@Bean
-	RestClientCustomizer restClientCustomizer(EntryProps props,
-			LogbookClientHttpRequestInterceptor logbookClientHttpRequestInterceptor) {
+	RestClientCustomizer restClientCustomizer(EntryProps props) {
 		final ExponentialBackOff backOff = new ExponentialBackOff(props.retryInterval().toMillis(), 2);
 		backOff.setMaxElapsedTime(props.retryMaxElapsedTime().toMillis());
-		return builder -> builder.requestInterceptor(logbookClientHttpRequestInterceptor)
-			.requestInterceptor(new RetryableClientHttpRequestInterceptor(backOff));
+		return builder -> builder.requestInterceptor(new RetryableClientHttpRequestInterceptor(backOff));
 	}
 
 	@Bean
