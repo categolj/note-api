@@ -46,7 +46,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
-		properties = { "logging.level.web=INFO", "maildev.port=0", "spring.http.client.factory=simple" })
+		properties = { "logging.level.web=INFO", "maildev.port=0", "spring.http.client.factory=simple",
+				"spring.modulith.events.republish-outstanding-events-on-restart=false" })
 @Import(TestContainersConfig.class)
 @Testcontainers(disabledWithoutDocker = true)
 @TestMethodOrder(OrderAnnotation.class)
