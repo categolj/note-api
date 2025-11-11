@@ -51,7 +51,8 @@ public class SecurityConfig {
 		return http
 			.authorizeHttpRequests(auth -> auth.requestMatchers(OPTIONS)
 				.permitAll()
-				.requestMatchers("/info", "/oauth/token", "/swagger-ui/**", "/v3/api-docs/**", "/readyz", "/livez")
+				.requestMatchers("/info", "/oauth/token", "/swagger-ui/**", "/v3/api-docs/**", "/readyz", "/livez",
+						"/actuator/**")
 				.permitAll()
 				.requestMatchers("/password_reset", "/password_reset/**")
 				.permitAll()
