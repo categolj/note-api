@@ -1,11 +1,9 @@
 package am.ik.note.content;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.UUID;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record NoteId(@Nullable @JsonProperty("noteId") UUID value) {
 	public static NoteId random() {

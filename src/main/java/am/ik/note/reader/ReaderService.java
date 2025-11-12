@@ -1,20 +1,19 @@
 package am.ik.note.reader;
 
-import java.net.URI;
-import java.time.Clock;
-import java.time.OffsetDateTime;
-
 import am.ik.note.reader.activationlink.ActivationLink;
 import am.ik.note.reader.activationlink.ActivationLinkExpiredException;
 import am.ik.note.reader.activationlink.ActivationLinkId;
 import am.ik.note.reader.activationlink.ActivationLinkMapper;
+import java.net.URI;
+import java.time.Clock;
+import java.time.OffsetDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.IdGenerator;
 
 import static am.ik.note.reader.ActivationLinkSendEventBuilder.activationLinkSendEvent;
@@ -52,12 +51,15 @@ public class ReaderService {
 
 	@Transactional
 	public ActivationLink createReader(String email, String rawPassword) {
+		Assert.hasText(email, "email must not be empty");
+		Assert.hasText(rawPassword, "password must not be empty");
 		final ReaderId readerId = this.readerMapper.findByEmail(email).map(Reader::readerId).orElseGet(() -> {
 			final ReaderId id = new ReaderId(idGenerator.generateId());
 			this.readerMapper.insert(id, email);
 			return id;
 		});
 		final String hashedPassword = this.passwordEncoder.encode(rawPassword);
+		Assert.notNull(hashedPassword, "rawPassword should be null");
 		this.readerPasswordMapper.deleteByReaderId(readerId);
 		this.readerPasswordMapper.insert(new ReaderPassword(readerId, hashedPassword));
 		final ActivationLink activationLink = new ActivationLink(new ActivationLinkId(idGenerator.generateId()),

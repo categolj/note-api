@@ -1,14 +1,13 @@
 package am.ik.note.content;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-
 import am.ik.note.entry.Entry;
 import am.ik.note.entry.EntryClient;
 import am.ik.note.reader.ReaderId;
-
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +39,7 @@ public class NoteService {
 			.stream()
 			.collect(toUnmodifiableMap(Entry::entryId, Function.identity()));
 		return summaries.stream().map(b -> {
-			final Entry entry = entryMap.get(b.getEntryId());
+			final Entry entry = entryMap.get(Objects.requireNonNull(b.getEntryId()));
 			if (entry == null) {
 				return b.build();
 			}

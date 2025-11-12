@@ -1,20 +1,22 @@
 package am.ik.note.content;
 
 import java.time.OffsetDateTime;
+import org.jspecify.annotations.Nullable;
+import org.springframework.util.Assert;
 
 public class NoteSummaryBuilder {
 
-	private NoteId noteId;
+	@Nullable private NoteId noteId;
 
-	private Long entryId;
+	@Nullable private Long entryId;
 
-	private String title;
+	@Nullable private String title;
 
-	private String noteUrl;
+	@Nullable private String noteUrl;
 
 	private boolean subscribed;
 
-	private OffsetDateTime updatedDate;
+	@Nullable private OffsetDateTime updatedDate;
 
 	public NoteSummaryBuilder withNoteId(NoteId noteId) {
 		this.noteId = noteId;
@@ -46,11 +48,13 @@ public class NoteSummaryBuilder {
 		return this;
 	}
 
-	public Long getEntryId() {
+	@Nullable public Long getEntryId() {
 		return entryId;
 	}
 
 	public NoteSummary build() {
+		Assert.notNull(this.entryId, "entryId is required");
+		Assert.notNull(this.noteUrl, "noteUrl is required");
 		return new NoteSummary(this.noteId, this.entryId, this.title, this.noteUrl, this.subscribed, this.updatedDate);
 	}
 

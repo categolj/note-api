@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -56,6 +58,7 @@ public class TokenController {
 		try {
 			final Authentication authenticated = this.authenticationManager.authenticate(authentication);
 			final UserDetails userDetails = (UserDetails) authenticated.getPrincipal();
+			Assert.notNull(userDetails, "UserDetails must not be null");
 			final String issuer = builder.path("oauth/token").build().toString();
 			final String subject = userDetails instanceof ReaderUserDetails
 					? ((ReaderUserDetails) userDetails).getReader().readerId().toString() : userDetails.getUsername();
@@ -89,7 +92,9 @@ public class TokenController {
 			log.atWarn().addKeyValue("username", input.username()).addKeyValue("reason", e.getMessage()).log("""
 					msg="Authentication failed"
 					""".trim());
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new OAuth2Error("unauthorized", e.getMessage()));
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(new OAuth2Error("unauthorized",
+						Objects.requireNonNullElse(e.getMessage(), "Authentication failed")));
 		}
 	}
 

@@ -10,6 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -19,15 +20,13 @@ import org.springframework.boot.actuate.web.exchanges.HttpExchange.Principal;
 import org.springframework.boot.actuate.web.exchanges.HttpExchange.Request;
 import org.springframework.boot.actuate.web.exchanges.HttpExchange.Response;
 import org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository;
-import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
 class AccessLogger implements HttpExchangeRepository {
 
 	private final Predicate<HttpExchange> filter;
 
-	@Nullable
-	private final BiConsumer<StringBuilder, HttpExchange> logCustomizer;
+	@Nullable private final BiConsumer<StringBuilder, HttpExchange> logCustomizer;
 
 	private final Level level;
 
@@ -35,8 +34,7 @@ class AccessLogger implements HttpExchangeRepository {
 
 	private final boolean emptyLogMessage;
 
-	@Nullable
-	private final BiFunction<LoggingEventBuilder, HttpExchange, LoggingEventBuilder> loggingEventCustomizer;
+	@Nullable private final BiFunction<LoggingEventBuilder, HttpExchange, LoggingEventBuilder> loggingEventCustomizer;
 
 	private final Logger log;
 
@@ -180,24 +178,19 @@ class AccessLogger implements HttpExchangeRepository {
 
 	public static class Builder {
 
-		@Nullable
-		private Predicate<HttpExchange> filter;
+		@Nullable private Predicate<HttpExchange> filter;
 
-		@Nullable
-		private BiConsumer<StringBuilder, HttpExchange> logCustomizer;
+		@Nullable private BiConsumer<StringBuilder, HttpExchange> logCustomizer;
 
-		@Nullable
-		private String loggerName;
+		@Nullable private String loggerName;
 
-		@Nullable
-		private Level level;
+		@Nullable private Level level;
 
 		private boolean addKeyValues = false;
 
 		private boolean emptyLogMessage = false;
 
-		@Nullable
-		private BiFunction<LoggingEventBuilder, HttpExchange, LoggingEventBuilder> loggingEventCustomizer;
+		@Nullable private BiFunction<LoggingEventBuilder, HttpExchange, LoggingEventBuilder> loggingEventCustomizer;
 
 		public Builder filter(@Nullable Predicate<HttpExchange> filter) {
 			this.filter = filter;
