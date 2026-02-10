@@ -133,7 +133,7 @@
     <dependency>
       <groupId>cc.jilt</groupId>
       <artifactId>jilt</artifactId>
-      <version>1.8.4</version>
+      <version>1.9.1</version>
       <scope>provided</scope> <!-- Jilt is not needed at runtime -->
     </dependency>
     <dependency>
@@ -251,7 +251,7 @@
             <path>
               <groupId>cc.jilt</groupId>
               <artifactId>jilt</artifactId>
-              <version>1.8.4</version>
+              <version>1.9.1</version>
             </path>
             <path>
               <groupId>com.google.errorprone</groupId>
