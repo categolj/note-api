@@ -17,7 +17,7 @@
   <properties>
     <java.version>17</java.version>
     <datasource-micrometer.version>2.1.1</datasource-micrometer.version>
-    <spring-modulith.version>2.0.2</spring-modulith.version>
+    <spring-modulith.version>2.0.3</spring-modulith.version>
   </properties>
   <dependencies>
     <dependency>
