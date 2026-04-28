@@ -1,8 +1,8 @@
-image: ghcr.io/categolj/note-api@sha256:5c97a56d3ac63c2679d755d2d88454fc955305af9dd926e6b6539bcbe296709d
-git_revision: 86cb2369bce50b6e60fedccb5ba48d287946f9e4
+image: ghcr.io/categolj/note-api@sha256:124e3df127c6877f354cb6ec008f2b758d5374c21d3ba63c72581f792ac5080c
+git_revision: adf913ee8254cfa9d41aa2b28fa4869f8e839bb3
 deployment:
   image:
     repository: ghcr.io/categolj/note-api
-    digest: sha256:5c97a56d3ac63c2679d755d2d88454fc955305af9dd926e6b6539bcbe296709d
+    digest: sha256:124e3df127c6877f354cb6ec008f2b758d5374c21d3ba63c72581f792ac5080c
   podLabels:
-    github.com/revision: 86cb2369bce50b6e60fedccb5ba48d287946f9e4
+    github.com/revision: adf913ee8254cfa9d41aa2b28fa4869f8e839bb3
